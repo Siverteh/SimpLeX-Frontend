@@ -11,7 +11,7 @@ namespace SimpLeX.Controllers
 {
     public class DocumentController : Controller
     {
-        private readonly IKubernetes _client;
+        private readonly Kubernetes _client;
 
         public DocumentController()
         {

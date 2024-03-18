@@ -1,14 +1,14 @@
 ﻿apiVersion: batch/v1
 kind: Job
 metadata:
-  name: latex-compilation-job
+  generateName: latex-compilation-
 spec:
   template:
     spec:
       containers:
         - name: latex-compiler
           image: siverteh/latex-compiler
-          command: ["pdflatex", "-interaction=nonstopmode", "yourfile.tex"]
+          command: ["/bin/sh", "-c", "pdflatex -interaction=nonstopmode /data/yourfile.tex"]
           volumeMounts:
             - name: document-volume
               mountPath: /data
@@ -16,5 +16,5 @@ spec:
       volumes:
         - name: document-volume
           persistentVolumeClaim:
-            claimName: latex-documents-pvc # Make sure this PVC exists
+            claimName: latex-documents-pvc
   backoffLimit: 4

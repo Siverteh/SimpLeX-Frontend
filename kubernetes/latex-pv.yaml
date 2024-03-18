@@ -3,9 +3,10 @@ kind: PersistentVolume
 metadata:
   name: latex-pv
 spec:
+  storageClassName: manual
   capacity:
     storage: 1Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /path/on/host/latex-files
+    path: "/path/on/host/latex-data"
