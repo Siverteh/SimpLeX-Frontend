@@ -1,0 +1,11 @@
+﻿apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: latex-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /path/on/host/latex-files

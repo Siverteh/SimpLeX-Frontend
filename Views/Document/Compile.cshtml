@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "Compile LaTeX";
+}
+
+<h2>Compile LaTeX Document</h2>
+
+<form asp-action="Compile" method="post">
+    <div class="form-group">
+        <label for="latexCode">LaTeX Code</label>
+        <textarea class="form-control" id="latexCode" name="latexCode" rows="10" placeholder="Enter LaTeX code here"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Compile</button>
+</form>
