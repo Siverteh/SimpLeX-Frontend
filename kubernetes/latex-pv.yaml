@@ -9,4 +9,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/path/on/host/latex-data"
+    path: "/mnt/data/latex-data" # Ensure this path exists on your host

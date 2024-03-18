@@ -3,6 +3,3 @@ FROM texlive/texlive:latest
 
 # Set working directory in the container
 WORKDIR /data
-
-# Ensure the container keeps running to allow compilation tasks
-ENTRYPOINT ["tail", "-f", "/dev/null"]
