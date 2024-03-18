@@ -3,3 +3,12 @@ FROM texlive/texlive:latest
 
 # Set working directory in the container
 WORKDIR /data
+
+# Add the compilation script to the container
+COPY compile.sh /compile.sh
+
+# Make sure the script is executable (if not already)
+RUN chmod +x /compile.sh
+
+# Set the entrypoint to your compilation script
+ENTRYPOINT ["/compile.sh"]

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: simplex-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: simplex
@@ -15,5 +15,9 @@ spec:
       containers:
         - name: simplex
           image: siverteh/simplex:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "true"

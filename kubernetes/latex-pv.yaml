@@ -3,10 +3,11 @@ kind: PersistentVolume
 metadata:
   name: latex-pv
 spec:
-  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
   capacity:
     storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
   hostPath:
-    path: "/mnt/data/latex-data" # Ensure this path exists on your host
+    path: /mnt/data/latex-data
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual

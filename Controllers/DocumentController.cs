@@ -15,8 +15,14 @@ namespace SimpLeX.Controllers
 
         public DocumentController()
         {
-            var config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
-            _client = new Kubernetes(config);
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                _client = new Kubernetes(KubernetesClientConfiguration.BuildConfigFromConfigFile());
+            }
+            else
+            {
+                _client = new Kubernetes(KubernetesClientConfiguration.InClusterConfig());
+            }
         }
 
         [HttpGet]
@@ -28,15 +34,16 @@ namespace SimpLeX.Controllers
         [HttpPost]
         public async Task<IActionResult> Compile(string latexCode)
         {
-            // Step 1: Save LaTeX code to a temporary file
-            var tempFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".tex");
-            System.IO.File.WriteAllText(tempFilePath, latexCode);
+            // Path within the PVC where the LaTeX file and PDF will be stored
+            var dataPath = "/mnt/data/latex-data";
+            var texFilePath = Path.Combine(dataPath, "document.tex");
+            var pdfFilePath = Path.Combine(dataPath, "document.pdf");
 
-            // Assume a PersistentVolumeClaim is set up for /data
-            // and tempFilePath needs to be copied or made available at /data/document.tex
+            // Write the LaTeX code to a file
+            System.IO.File.WriteAllText(texFilePath, latexCode);
 
-            // Step 2: Create the Kubernetes job for LaTeX compilation
-            var jobName = "latex-compilation-" + Guid.NewGuid().ToString();
+            // Define the Kubernetes job to compile the LaTeX document
+            var jobName = $"latex-compilation-{Guid.NewGuid()}";
             var job = new V1Job
             {
                 ApiVersion = "batch/v1",
@@ -54,11 +61,8 @@ namespace SimpLeX.Controllers
                                 {
                                     Name = "latex-compiler",
                                     Image = "siverteh/latex-compiler",
-                                    Args = new List<string> { "pdflatex", "-interaction=nonstopmode", "document.tex" },
                                     VolumeMounts = new List<V1VolumeMount>
-                                    {
-                                        new V1VolumeMount { Name = "latex-data", MountPath = "/data" }
-                                    }
+                                        { new V1VolumeMount { Name = "latex-data", MountPath = "/data" } }
                                 }
                             },
                             Volumes = new List<V1Volume>
@@ -66,7 +70,8 @@ namespace SimpLeX.Controllers
                                 new V1Volume
                                 {
                                     Name = "latex-data",
-                                    PersistentVolumeClaim = new V1PersistentVolumeClaimVolumeSource { ClaimName = "latex-pvc" }
+                                    PersistentVolumeClaim = new V1PersistentVolumeClaimVolumeSource
+                                        { ClaimName = "latex-pvc" }
                                 }
                             },
                             RestartPolicy = "Never"
@@ -75,30 +80,29 @@ namespace SimpLeX.Controllers
                 }
             };
 
+            // Create the Kubernetes job
             await _client.CreateNamespacedJobAsync(job, "default");
 
-            // Step 3: Monitor job completion (simplified logic)
+            // Monitor the job completion
             bool isJobCompleted = false;
             while (!isJobCompleted)
             {
-                var jobs = await _client.ListNamespacedJobAsync("default");
-                var currentJob = jobs.Items.FirstOrDefault(j => j.Metadata.Name == jobName);
-                if (currentJob != null && currentJob.Status.Succeeded.HasValue && currentJob.Status.Succeeded.Value > 0)
+                await Task.Delay(1000); // Simple delay for polling the job status
+                var currentJob = await _client.ReadNamespacedJobAsync(jobName, "default");
+                if (currentJob.Status.CompletionTime.HasValue)
                 {
                     isJobCompleted = true;
                 }
-                else
-                {
-                    // Implement a delay or a more sophisticated check with timeout
-                    Task.Delay(1000).Wait();
-                }
             }
 
-            // Step 4: Retrieve and serve the compiled PDF (assuming the PDF is named document.pdf and stored in the same PVC)
-            // This part needs customization based on how you access the PDF from the PVC
-            var pdfPath = "/data/document.pdf"; // This path needs to be accessible by your application
-            var pdfContent = System.IO.File.ReadAllBytes(pdfPath); // Adjust based on actual file retrieval method
-            return File(pdfContent, "application/pdf", "compiled_document.pdf");
+            // Serve the compiled PDF
+            if (System.IO.File.Exists(pdfFilePath))
+            {
+                var pdfContent = await System.IO.File.ReadAllBytesAsync(pdfFilePath);
+                return File(pdfContent, "application/pdf", "compiled_document.pdf");
+            }
+
+            return NotFound("Compiled document not found.");
         }
     }
 }

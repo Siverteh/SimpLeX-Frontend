@@ -13,6 +13,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+if (Environment.GetEnvironmentVariable("ASPNETCORE_DETAILEDERRORS") == "true")
+{
+    app.UseDeveloperExceptionPage();
+}
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
