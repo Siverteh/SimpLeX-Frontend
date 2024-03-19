@@ -41,5 +41,4 @@ fi
 echo "Restarting Kubernetes deployment $DEPLOYMENT_NAME..."
 kubectl rollout restart deployment/$DEPLOYMENT_NAME --namespace=$NAMESPACE
 
-# Final message
-echo "Update process completed successfully."
+minikube service simplex-service --url

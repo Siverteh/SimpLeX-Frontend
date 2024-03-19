@@ -1,0 +1,5 @@
+﻿# Use a base image with LaTeX pre-installed
+FROM texlive/texlive:latest
+
+# Set working directory in the container
+WORKDIR /data

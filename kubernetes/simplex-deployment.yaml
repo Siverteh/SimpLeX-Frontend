@@ -19,5 +19,12 @@ spec:
           ports:
             - containerPort: 80
           env:
-            - name: ASPNETCORE_ENVIRONMENT
-              value: "true"
+            - name: LATEX_DATA_PATH
+              value: "/mnt/data/latex-data"
+          volumeMounts:
+            - name: latex-volume
+              mountPath: "/mnt/data/latex-data"
+      volumes:
+        - name: latex-volume
+          persistentVolumeClaim:
+            claimName: latex-pvc

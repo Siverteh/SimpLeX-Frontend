@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: latex-compiler
-          image: siverteh/latex-compiler
+          image: siverteh/latex-compiler:latest
           command: [ "pdflatex" ]
           args: [ "-interaction=nonstopmode", "/data/document.tex" ]
           volumeMounts:
@@ -18,4 +18,3 @@ spec:
         - name: latex-volume
           persistentVolumeClaim:
             claimName: latex-pvc
-  backoffLimit: 4
