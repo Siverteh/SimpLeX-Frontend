@@ -1,7 +1,7 @@
 ﻿#!/bin/bash
 
 # Define variables
-IMAGE_NAME="siverteh/simplex"
+IMAGE_NAME="siverteh/simplex-frontend"
 IMAGE_TAG="latest" # Change this as needed
 DEPLOYMENT_NAME="simplex-deployment"
 NAMESPACE="default" # Change this if your deployment is in a different namespace
