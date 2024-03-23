@@ -1,35 +1,47 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Hosting;
-using SimpLeX.Services; // Ensure this using directive points to where your LatexService class is located.
-using System.IO;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace SimpLeX.Controllers
+namespace SimpLeX_Frontend.Controllers
 {
     public class DocumentController : Controller
     {
-        private readonly IWebHostEnvironment _environment;
-        private readonly LatexService _latexService;
+        private readonly IHttpClientFactory _clientFactory;
 
-        public DocumentController(IWebHostEnvironment environment)
+        public DocumentController(IHttpClientFactory clientFactory)
         {
-            _environment = environment;
-            _latexService = new LatexService(); // Initialize the LatexService.
+            _clientFactory = clientFactory;
         }
 
-        public IActionResult CompileLatex()
+        [HttpGet]
+        public IActionResult Compile()
         {
-            // Assuming "LatexFiles" is directly under the project's root directory.
-            var latexFilePath = Path.Combine(_environment.WebRootPath, "latex", "sample.tex");
-            var pdfPath = _latexService.CompileLatexToPDF(latexFilePath);
+            return View();
+        }
 
-            if (pdfPath != null)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Compile(string latexCode)
+        {
+            var compileRequest = new { LatexCode = latexCode };
+            var client = _clientFactory.CreateClient();
+            var response = await client.PostAsync("http://simplex-backend-service:8080/api/Document/Compile", 
+                new StringContent(System.Text.Json.JsonSerializer.Serialize(compileRequest), Encoding.UTF8, "application/json"));
+
+            if (response.IsSuccessStatusCode)
             {
-                return File(System.IO.File.ReadAllBytes(pdfPath), "application/pdf", "compiled_document.pdf");
+                var pdfBytes = await response.Content.ReadAsByteArrayAsync();
+                var pdfBase64 = Convert.ToBase64String(pdfBytes);
+                ViewBag.PdfData = "data:application/pdf;base64," + pdfBase64;
             }
             else
             {
-                return NotFound("Compilation failed or PDF not found.");
+                ViewBag.ErrorMessage = "Failed to compile document.";
             }
+            // Pass the original LaTeX code back to the view
+            ViewBag.LatexCode = latexCode;
+            return View();
         }
     }
 }
