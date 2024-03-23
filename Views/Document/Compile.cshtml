@@ -4,10 +4,19 @@
 
 <h2>Compile LaTeX Document</h2>
 
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
 <form asp-action="Compile" method="post">
+    @Html.AntiForgeryToken()
+
     <div class="form-group">
         <label for="latexCode">LaTeX Code</label>
-        <textarea class="form-control" id="latexCode" name="latexCode" rows="10" placeholder="Enter LaTeX code here"></textarea>
+        <textarea class="form-control" id="latexCode" name="latexCode" rows="10" placeholder="Enter LaTeX code here..."></textarea>
     </div>
     <button type="submit" class="btn btn-primary">Compile</button>
 </form>

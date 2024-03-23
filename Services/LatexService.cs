@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 
-namespace SimpLeX.Services
+namespace SimpLeX_Frontend.Services
 {
     public class LatexService
     {

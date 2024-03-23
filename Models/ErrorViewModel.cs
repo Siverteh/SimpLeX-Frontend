@@ -1,4 +1,4 @@
-namespace SimpLeX.Models;
+namespace SimpLeX_Frontend.Models;
 
 public class ErrorViewModel
 {
