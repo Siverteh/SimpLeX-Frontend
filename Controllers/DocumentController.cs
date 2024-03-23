@@ -24,26 +24,24 @@ namespace SimpLeX_Frontend.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Compile(string latexCode)
         {
-            var compileRequest = new
-            {
-                LatexCode = latexCode
-            };
-
+            var compileRequest = new { LatexCode = latexCode };
             var client = _clientFactory.CreateClient();
             var response = await client.PostAsync("http://simplex-backend-service:8080/api/Document/Compile", 
                 new StringContent(System.Text.Json.JsonSerializer.Serialize(compileRequest), Encoding.UTF8, "application/json"));
 
             if (response.IsSuccessStatusCode)
             {
-                var pdfStream = await response.Content.ReadAsStreamAsync();
-                return File(pdfStream, "application/pdf", "compiledDocument.pdf");
+                var pdfBytes = await response.Content.ReadAsByteArrayAsync();
+                var pdfBase64 = Convert.ToBase64String(pdfBytes);
+                ViewBag.PdfData = "data:application/pdf;base64," + pdfBase64;
             }
             else
             {
-                // Handle error or unsuccessful compilation
                 ViewBag.ErrorMessage = "Failed to compile document.";
-                return View();
             }
+            // Pass the original LaTeX code back to the view
+            ViewBag.LatexCode = latexCode;
+            return View();
         }
     }
 }

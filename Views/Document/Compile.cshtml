@@ -2,21 +2,51 @@
     ViewData["Title"] = "Compile LaTeX";
 }
 
-<h2>Compile LaTeX Document</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>@ViewData["Title"]</title>
+</head>
+<body>
+<div class="container mt-3">
+    <h2>Compile LaTeX Document</h2>
 
-@if (ViewBag.ErrorMessage != null)
-{
-    <div class="alert alert-danger" role="alert">
-        @ViewBag.ErrorMessage
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- LaTeX Code Form -->
+            <form asp-action="Compile" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label for="latexCode">LaTeX Code</label>
+                    <textarea class="form-control" id="latexCode" name="latexCode" rows="20" placeholder="Enter LaTeX code here...">@ViewBag.LatexCode</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Compile</button>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <!-- Directly display PDF if available -->
+            @if (ViewBag.PdfData != null)
+            {
+                <iframe src="@ViewBag.PdfData" width="100%" height="600px" type="application/pdf"></iframe>
+            }
+        </div>
     </div>
-}
+</div>
 
-<form asp-action="Compile" method="post">
-    @Html.AntiForgeryToken()
-
-    <div class="form-group">
-        <label for="latexCode">LaTeX Code</label>
-        <textarea class="form-control" id="latexCode" name="latexCode" rows="10" placeholder="Enter LaTeX code here..."></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Compile</button>
-</form>
+<!-- Optional JavaScript -->
+<!-- Include jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
