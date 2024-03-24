@@ -8,10 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="wwwroot\latex\sample.tex" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="KubernetesClient" Version="13.0.26" />
     </ItemGroup>
 
