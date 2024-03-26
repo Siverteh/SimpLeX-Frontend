@@ -8,11 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="wwwroot\latex\sample.tex" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="KubernetesClient" Version="13.0.26" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>
