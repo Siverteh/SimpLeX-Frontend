@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -58,6 +59,48 @@ namespace SimpLeX_Frontend.Controllers
     
             return View(projects);
         }
+        
+        [HttpPost]
+        public async Task<IActionResult> CreateProject(ProjectViewModel model)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var projectCreationUrl = "http://simplex-backend-service:8080/api/Project/Create"; // URL of your backend service
 
+            var token = Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                // If no JWT token redirect to login page.
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, projectCreationUrl)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(new { Title = model.Title }), Encoding.UTF8, "application/json")
+            };
+
+            // Attach the JWT token in Authorization header
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            try
+            {
+                var response = await httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index", "Project");
+                }
+                else
+                {
+                    // Handle failure
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, errorContent);
+                }
+            }
+            catch (HttpRequestException e)
+            {
+                // Log exception details
+                return StatusCode(500, $"Internal server error: {e.Message}");
+            }
+        }
     }
 }
