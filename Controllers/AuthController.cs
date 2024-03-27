@@ -1,6 +1,8 @@
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SimpLeX_Frontend.Models;
@@ -42,6 +44,8 @@ public class AuthController : Controller
 
         if (response.IsSuccessStatusCode)
         {
+            
+            
             var responseContent = await response.Content.ReadAsStringAsync();
             var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
 
@@ -53,7 +57,7 @@ public class AuthController : Controller
                 HttpContext.Response.Cookies.Append("JWTToken", authResponse.Token, new CookieOptions { HttpOnly = true, Secure = true });
 
                 // Redirect to the Home page or dashboard upon successful login
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Project");
             }
             else
             {
@@ -79,22 +83,27 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
-        if (!ModelState.IsValid || !IsPasswordStrong(model.Password) || (model.Password != model.ConfirmPassword))
+        if (!ModelState.IsValid)
         {
-            if (model.Password != model.ConfirmPassword)
-            {
-                ViewBag.ErrorMessage = "Passwords do not match.";
-            }
-            else if (!IsPasswordStrong(model.Password))
-            {
-                ViewBag.ErrorMessage = "Password must be 8 characters long, contain an uppercase letter, and contain a number.";
-            }
+            ViewBag.ErrorMessage = "Modelstate is invalid.";
             return View(model);
+        }
+
+        if (model.Password != model.ConfirmPassword)
+        {
+            ViewBag.ErrorMessage = "Passwords do not match.";
+            return View(model);
+        }
+        
+        if (!IsPasswordStrong(model.Password))
+        {
+                ViewBag.ErrorMessage = "Password must be 8 characters long, contain an uppercase letter, and contain a number.";
+                return View(model);
         }
 
         var user = new
         {
-            Username = model.UserName,
+            UserName = model.UserName,
             Email = model.Email,
             Password = model.Password, // Ensure your backend handles password hashing
             ConfirmPassword = model.ConfirmPassword

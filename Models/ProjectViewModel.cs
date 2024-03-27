@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SimpLeX_Frontend.Models;
@@ -6,6 +7,8 @@ public class ProjectViewModel
 {
     public string Id { get; set; } // Unique identifier for the project
     public string Title { get; set; } // Title of the project
+    
+    public string Owner { get; set; }
     public string UserId { get; set; } // Owner of the project
     public DateTime LastModified { get; set; } // Last modified date/time of the project
     
