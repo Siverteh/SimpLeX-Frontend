@@ -72,9 +72,11 @@
         @foreach(var project in Model)
         {
             <tr>
-                <td class="title-column">@project.Title</td>
+                <td class="title-column">
+                    <a href="@Url.Action("Edit", "Editor", new { projectId = project.ProjectId })">@project.Title</a>
+                </td>
                 <td class="other-column">@project.Owner</td>
-                <td class="other-column">@project.LastModified.ToString("g")</td>
+                <td class="other-column">@project.LastModifiedDate.ToString("g")</td>
                 <td class="actions-column">
                     <i class="icon edit-icon">📝</i>
                     <i class="icon copy-icon">📋</i>

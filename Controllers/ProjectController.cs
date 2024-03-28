@@ -80,26 +80,18 @@ namespace SimpLeX_Frontend.Controllers
 
             // Attach the JWT token in Authorization header
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            
+            var response = await httpClient.SendAsync(request);
 
-            try
+            if (response.IsSuccessStatusCode)
             {
-                var response = await httpClient.SendAsync(request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return RedirectToAction("Index", "Project");
-                }
-                else
-                {
-                    // Handle failure
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    return StatusCode((int)response.StatusCode, errorContent);
-                }
+                return RedirectToAction("Index", "Project");
             }
-            catch (HttpRequestException e)
+            else
             {
-                // Log exception details
-                return StatusCode(500, $"Internal server error: {e.Message}");
+                // Handle failure
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, errorContent);
             }
         }
     }
