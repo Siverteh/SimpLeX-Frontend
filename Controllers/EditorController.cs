@@ -74,27 +74,19 @@ namespace SimpLeX_Frontend.Controllers
                 Content = new StringContent(JsonConvert.SerializeObject(compileRequest), Encoding.UTF8, "application/json")
             };
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            try
+            
+            var response = await httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
             {
-                var response = await httpClient.SendAsync(request);
-                if (response.IsSuccessStatusCode)
-                {
-                    var pdfBytes = await response.Content.ReadAsByteArrayAsync();
-                    var pdfBase64 = Convert.ToBase64String(pdfBytes);
-                    ViewBag.PdfData = pdfBase64;
-                    return View("~/Views/Project/Editor.cshtml", model);
-                }
-                else
-                {
-                    ViewBag.ErrorMessage = "Failed to compile document.";
-                    return View("~/Views/Project/Editor.cshtml", model);
-                }
+                var pdfBytes = await response.Content.ReadAsByteArrayAsync();
+                var pdfBase64 = Convert.ToBase64String(pdfBytes);
+                ViewBag.PdfData = pdfBase64;
+                return Json(new { success = true, pdfData = pdfBase64 });
             }
-            catch (HttpRequestException e)
+            else
             {
-                ViewBag.ErrorMessage = $"Internal server error: {e.Message}";
-                return View("~/Views/Project/Editor.cshtml", model);
+                ViewBag.ErrorMessage = "Failed to compile document.";
+                return Json(new { success = false, message = "Failed to compile document." });
             }
         }
 

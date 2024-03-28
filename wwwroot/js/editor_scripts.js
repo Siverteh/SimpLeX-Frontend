@@ -55,3 +55,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for input events on the LaTeX editor and debounce the autosave function
     latexEditor.addEventListener('input', debounce(autoSaveLatexContent, 500)); // Adjust debounce time as needed
 });
+
+document.getElementById('compileBtn').addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent the form from submitting the traditional way
+
+    var formData = new FormData();
+    formData.append('projectId', document.getElementById('projectId').value);
+    formData.append('latexCode', document.getElementById('latexCode').value);
+
+    fetch('/Editor/Compile', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value // Handling anti-forgery token
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Store the PDF in the browser's cache
+                localStorage.setItem('compiledPdf', data.pdfData);
+
+                // Optionally, redirect to the Edit page or refresh it to display the PDF from cache
+            } else {
+                alert(data.message); // Handle failure
+            }
+
+            if (localStorage.getItem('compiledPdf')) {
+                var pdfData = localStorage.getItem('compiledPdf');
+                var pdfDisplay = document.getElementById('pdfDisplay');
+                pdfDisplay.setAttribute('src', 'data:application/pdf;base64,' + pdfData);
+            }
+        });
+});

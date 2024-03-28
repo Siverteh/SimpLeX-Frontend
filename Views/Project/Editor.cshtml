@@ -41,10 +41,9 @@
         </div>
         <div class="col-md-6">
             <!-- Display PDF if available -->
-            @if (ViewBag.PdfData != null)
-            {
-                <iframe src="data:application/pdf;base64,@ViewBag.PdfData" width="100%" height="600px"></iframe>
-            }
+            <!-- Place this within your HTML body where you want the PDF to appear -->
+            <iframe id="pdfDisplay" style="width:100%;height:500px;" frameborder="0"></iframe>
+            
         </div>
     </div>
 </div>
