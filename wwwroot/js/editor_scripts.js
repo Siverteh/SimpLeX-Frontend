@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 document.getElementById('compileBtn').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent the form from submitting the traditional way
+    event.preventDefault(); // Prevent form submission
 
     var formData = new FormData();
     formData.append('projectId', document.getElementById('projectId').value);
@@ -67,24 +67,75 @@ document.getElementById('compileBtn').addEventListener('click', function(event) 
         method: 'POST',
         body: formData,
         headers: {
-            'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value // Handling anti-forgery token
+            'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value,
+            'Accept': 'application/json' // Expecting JSON response with base64-encoded PDF
         }
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json(); // Parse response as JSON
+        })
         .then(data => {
-            if (data.success) {
-                // Store the PDF in the browser's cache
-                localStorage.setItem('compiledPdf', data.pdfData);
+            if (data.success && data.pdfData) {
+                // Decode base64 to binary
+                var byteCharacters = atob(data.pdfData);
+                var byteNumbers = new Array(byteCharacters.length);
+                for (var i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                var byteArray = new Uint8Array(byteNumbers);
 
-                // Optionally, redirect to the Edit page or refresh it to display the PDF from cache
+                // Create a new Blob object using the binary data and specify the type as PDF
+                var blob = new Blob([byteArray], {type: 'application/pdf'});
+                var pdfUrl = URL.createObjectURL(blob); // Create a blob URL from the Blob object
+
+                // Use the blob URL with the PDF.js viewer
+                const viewerPath = `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
+                document.getElementById('pdfDisplay').setAttribute('src', viewerPath);
             } else {
-                alert(data.message); // Handle failure
+                alert('Failed to load PDF.');
             }
-
-            if (localStorage.getItem('compiledPdf')) {
-                var pdfData = localStorage.getItem('compiledPdf');
-                var pdfDisplay = document.getElementById('pdfDisplay');
-                pdfDisplay.setAttribute('src', 'data:application/pdf;base64,' + pdfData);
-            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load PDF.');
         });
 });
+
+iframe.onload = function() {
+    try {
+        var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        // Attempting further adjustments
+        var viewerContainer = iframeDocument.getElementById('viewerContainer');
+        if (viewerContainer) {
+            viewerContainer.style.margin = '0';
+            viewerContainer.style.padding = '0';
+        }
+
+        var viewer = iframeDocument.getElementById('viewer');
+        if (viewer) {
+            viewer.style.margin = '0';
+            viewer.style.padding = '0';
+        }
+    } catch (error) {
+        console.error("Error adjusting layout:", error);
+    }
+};
+
+iframe.onload = function() {
+    try {
+        var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+        // Collapse any specific elements known to cause space
+        var headerContainer = iframeDocument.getElementById('headerContainer');
+        if (headerContainer) {
+            headerContainer.style.display = 'none';
+        }
+    } catch (error) {
+        console.error("Error collapsing elements:", error);
+    }
+};
+
+
+

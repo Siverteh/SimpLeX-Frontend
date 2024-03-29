@@ -1,0 +1,83 @@
+body, html {
+    height: 100%;
+    margin: 0;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1B222C;
+    padding: 10px;
+}
+
+.left-buttons, .right-buttons {
+    display: flex;
+}
+
+.editor-header button {
+    background-color: #495365;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    margin-right: 10px; /* Space between buttons */
+    color: white;
+}
+
+.editor-header .project-title {
+    color: white;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.editor-container {
+    display: flex;
+    height: calc(100% - 60px); /* Adjust based on header height */
+}
+
+.latex-editor {
+    flex: 0 0 60%; /* Assign 60% width */
+    height: 100%;
+    border-right: 2px solid #ccc; /* Separator */
+    display: flex;
+    flex-direction: column;
+    background-color: #E4E5F1;
+}
+
+.pdf-viewer {
+    flex: 0 0 40%; /* Assign 40% width */
+    height: 100%;
+    overflow: hidden; /* Prevents overflow */
+}
+
+.latex-editor form, #latexCode {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#latexCode {
+    flex-grow: 1; /* Ensure it takes up all available space */
+    border: none;
+    resize: none;
+}
+
+#pdfDisplay {
+    height: 100%;
+    width: 100%;
+    border: none;
+}
+
+/* Remove the last margin-right for the last button in each group */
+.left-buttons button:last-child, .right-buttons button:last-child {
+    margin-right: 0;
+}
+
+/* Draggable separator - Requires additional JS for functionality */
+.separator {
+    cursor: col-resize;
+    background-color: #ccc;
+    width: 5px;
+    height: 100%;
+}
