@@ -56,6 +56,12 @@ document.addEventListener('DOMContentLoaded', function() {
     latexEditor.addEventListener('input', debounce(autoSaveLatexContent, 500)); // Adjust debounce time as needed
 });
 
+function changeIframeSrc(iframe, src) {
+    var frame = iframe.cloneNode();
+    frame.src = src;
+    iframe.parentNode.replaceChild(frame, iframe);
+}
+
 document.getElementById('compileBtn').addEventListener('click', function(event) {
     event.preventDefault(); // Prevent form submission
 
@@ -79,7 +85,6 @@ document.getElementById('compileBtn').addEventListener('click', function(event) 
         })
         .then(data => {
             if (data.success && data.pdfData) {
-                // Decode base64 to binary
                 var byteCharacters = atob(data.pdfData);
                 var byteNumbers = new Array(byteCharacters.length);
                 for (var i = 0; i < byteCharacters.length; i++) {
@@ -87,13 +92,21 @@ document.getElementById('compileBtn').addEventListener('click', function(event) 
                 }
                 var byteArray = new Uint8Array(byteNumbers);
 
-                // Create a new Blob object using the binary data and specify the type as PDF
                 var blob = new Blob([byteArray], {type: 'application/pdf'});
                 var pdfUrl = URL.createObjectURL(blob); // Create a blob URL from the Blob object
 
                 // Use the blob URL with the PDF.js viewer
                 const viewerPath = `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
-                document.getElementById('pdfDisplay').setAttribute('src', viewerPath);
+
+                // Get the iframe and change its src without affecting history
+                var pdfIframe = document.getElementById('pdfDisplay');
+                changeIframeSrc(pdfIframe, viewerPath);
+
+                // Revoke old PDF blob URL to free memory
+                if (window.previousPdfUrl) {
+                    URL.revokeObjectURL(window.previousPdfUrl);
+                }
+                window.previousPdfUrl = pdfUrl;
             } else {
                 alert('Failed to load PDF.');
             }
@@ -104,38 +117,10 @@ document.getElementById('compileBtn').addEventListener('click', function(event) 
         });
 });
 
-iframe.onload = function() {
-    try {
-        var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-        // Attempting further adjustments
-        var viewerContainer = iframeDocument.getElementById('viewerContainer');
-        if (viewerContainer) {
-            viewerContainer.style.margin = '0';
-            viewerContainer.style.padding = '0';
-        }
 
-        var viewer = iframeDocument.getElementById('viewer');
-        if (viewer) {
-            viewer.style.margin = '0';
-            viewer.style.padding = '0';
-        }
-    } catch (error) {
-        console.error("Error adjusting layout:", error);
-    }
-};
 
-iframe.onload = function() {
-    try {
-        var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-        // Collapse any specific elements known to cause space
-        var headerContainer = iframeDocument.getElementById('headerContainer');
-        if (headerContainer) {
-            headerContainer.style.display = 'none';
-        }
-    } catch (error) {
-        console.error("Error collapsing elements:", error);
-    }
-};
+
+
 
 
 
