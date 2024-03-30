@@ -16,11 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (callNow) func.apply(context, args);
         };
     }
-
+    
     function compileLatexContent() {
+        
         console.log("Starting compilation process...");
         requestCurrentPage();
-        const currentPage = localStorage.getItem('currentPdfPage') || 1;
+        const projectId = document.getElementById('projectId').value;
+        const currentPage = localStorage.getItem('currentPdfPage_' + projectId) || 1;
         var formData = new FormData();
         formData.append('projectId', document.getElementById('projectId').value);
         formData.append('latexCode', document.getElementById('latexCode').value);
@@ -116,14 +118,16 @@ function requestCurrentPage() {
 
 window.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'CURRENT_PAGE') {
+        const projectId = document.getElementById('projectId').value;
         console.log("Received current page from PDF.js viewer:", event.data.page);
-        localStorage.setItem('currentPdfPage', event.data.page.toString());
+        localStorage.setItem('currentPdfPage_' + projectId, event.data.page.toString());
     }
 });
 
 
 function changeIframeSrc(iframe, src) {
-    const currentPage = localStorage.getItem('currentPdfPage') || 1;
+    const projectId = document.getElementById('projectId').value;
+    const currentPage = localStorage.getItem('currentPdfPage' + projectId) || 1;
     // Ensure the page number is part of the src URL immediately
     const newSrc = `${src}#page=${currentPage}`;
     console.log(`Loading PDF on page ${currentPage}`);
@@ -140,7 +144,8 @@ function changeIframeSrc(iframe, src) {
 
 
 function navigateToSavedPage() {
-    const currentPage = localStorage.getItem('currentPdfPage') || 1;
+    const projectId = document.getElementById('projectId').value;
+    const currentPage = localStorage.getItem('currentPdfPage_' + projectId) || 1;
     const pdfIframe = document.getElementById('pdfDisplay');
     if (pdfIframe && pdfIframe.contentWindow) {
         // This assumes PDF.js exposes a method or can process a hash change to navigate to a page
@@ -149,3 +154,5 @@ function navigateToSavedPage() {
         console.log(`Attempted to navigate to page ${currentPage}`);
     }
 }
+
+
