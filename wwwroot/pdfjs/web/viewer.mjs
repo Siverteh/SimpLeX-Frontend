@@ -25,6 +25,8 @@
 /***/ 8759:
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
+  
+  
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
@@ -35,6 +37,8 @@ __webpack_require__.d(__webpack_exports__, {
 // UNUSED EXPORTS: FluentDateTime, FluentNone, FluentNumber, FluentType
 
 ;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/types.js
+    
+    
 class FluentType {
   constructor(value) {
     this.value = value;
@@ -15112,3 +15116,4 @@ __webpack_async_result__();
 /******/ 
 
 //# sourceMappingURL=viewer.mjs.map
+

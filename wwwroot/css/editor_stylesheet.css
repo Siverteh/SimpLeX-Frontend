@@ -1,7 +1,19 @@
-body, html {
+html {
     height: 100%;
     margin: 0;
+    box-sizing: border-box; /* Make sure padding and borders are included in element sizes */
 }
+
+*, *:before, *:after {
+    box-sizing: inherit; /* Inherit box-sizing from html */
+}
+
+body {
+    height: 100vh; /* Viewport height */
+    margin: 0;
+    overflow: hidden; /* Prevent scrolling on the body */
+}
+
 
 .editor-header {
     display: flex;
@@ -33,7 +45,8 @@ body, html {
 
 .editor-container {
     display: flex;
-    height: calc(100% - 60px); /* Adjust based on header height */
+    height: calc(100vh - 60px); /* Adjust based on header height, using viewport units */
+    overflow: hidden; /* Prevent scrolling on the main container */
 }
 
 .latex-editor {
@@ -61,6 +74,7 @@ body, html {
     flex-grow: 1; /* Ensure it takes up all available space */
     border: none;
     resize: none;
+    color: black;
 }
 
 #pdfDisplay {

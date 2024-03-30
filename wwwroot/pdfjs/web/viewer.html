@@ -498,5 +498,18 @@ See https://github.com/adobe-type-tools/cmap-resources
     <div id="printContainer"></div>
 
     <input type="file" id="fileInput" class="hidden">
+
+    <!-- Place this right before the closing </body> tag in your viewer.html -->
+    <script>
+      window.addEventListener('message', (event) => {
+        console.log("PDF.js received message:", event.data);
+        if (event.data && event.data.type === 'GET_CURRENT_PAGE') {
+          const currentPage = PDFViewerApplication.pdfViewer.currentPageNumber;
+          console.log("Sending current page number:", currentPage);
+          event.source.postMessage({ type: 'CURRENT_PAGE', page: currentPage }, '*');
+        }
+      });
+    </script>
+
   </body>
 </html>

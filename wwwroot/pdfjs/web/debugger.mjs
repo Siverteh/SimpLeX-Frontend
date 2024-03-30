@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+// Add this to the PDF.js viewer.js or in a script tag after the viewer is loaded
+
 const { OPS } = globalThis.pdfjsLib || (await import("pdfjs-lib"));
 
 const opMap = Object.create(null);

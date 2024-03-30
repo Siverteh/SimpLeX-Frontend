@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const latexEditor = document.getElementById('latexCode'); // Your LaTeX editor element
-    let lastSavedContent = latexEditor.value; // Initialize with the current content to avoid unnecessary initial autosave
+    const latexEditor = document.getElementById('latexCode');
+    let lastSavedContent = latexEditor.value;
 
-    // Debounce function to limit how often a function is executed
     function debounce(func, wait, immediate) {
         let timeout;
         return function() {
@@ -18,14 +17,63 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Autosave function to be executed upon input in the LaTeX editor
+    function compileLatexContent() {
+        console.log("Starting compilation process...");
+        requestCurrentPage();
+        const currentPage = localStorage.getItem('currentPdfPage') || 1;
+        var formData = new FormData();
+        formData.append('projectId', document.getElementById('projectId').value);
+        formData.append('latexCode', document.getElementById('latexCode').value);
+
+        fetch('/Editor/Compile', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value,
+                'Accept': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.pdfData) {
+                    var byteCharacters = atob(data.pdfData);
+                    var byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    var byteArray = new Uint8Array(byteNumbers);
+
+                    var blob = new Blob([byteArray], {type: 'application/pdf'});
+                    var pdfUrl = URL.createObjectURL(blob);
+
+                    const viewerPath = `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}#page=${currentPage}`;
+
+                    var pdfIframe = document.getElementById('pdfDisplay');
+                    changeIframeSrc(pdfIframe, viewerPath);
+
+                    if (window.previousPdfUrl) {
+                        URL.revokeObjectURL(window.previousPdfUrl);
+                    }
+                    window.previousPdfUrl = pdfUrl;
+
+                    setTimeout(() => {
+                        navigateToSavedPage();
+                    }, 50);
+                } else {
+                    alert('Failed to load PDF.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to load PDF.');
+            });
+    }
+
     function autoSaveLatexContent() {
         const currentContent = latexEditor.value;
-        const projectId = document.getElementById('projectId').value; // Assuming you have an input element with the project ID
+        const projectId = document.getElementById('projectId').value;
 
-        // Only proceed if content has changed
         if (currentContent !== lastSavedContent) {
-            // Prepare the request payload
             const data = {
                 projectId: projectId,
                 latexCode: currentContent
@@ -35,15 +83,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Ensure to include the request verification token for ASP.NET Core anti-forgery validation
-                    'RequestVerificationToken': document.getElementsByName("__RequestVerificationToken")[0].value
+                    'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value
                 },
                 body: JSON.stringify(data)
             })
                 .then(response => {
                     if (response.ok) {
                         console.log('Document auto-saved at ' + new Date().toLocaleTimeString());
-                        lastSavedContent = currentContent; // Update the last saved content to the current content after successful autosave
+                        lastSavedContent = currentContent;
+                        compileLatexContent();
                     } else {
                         console.error('Failed to auto-save');
                     }
@@ -52,75 +100,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Listen for input events on the LaTeX editor and debounce the autosave function
-    latexEditor.addEventListener('input', debounce(autoSaveLatexContent, 500)); // Adjust debounce time as needed
+    latexEditor.addEventListener('input', debounce(autoSaveLatexContent, 500));
+    compileLatexContent();
 });
 
+function requestCurrentPage() {
+    const pdfIframe = document.getElementById('pdfDisplay');
+    if (pdfIframe.contentWindow) {
+        console.log("Requesting current page from PDF.js viewer...");
+        pdfIframe.contentWindow.postMessage({ type: 'GET_CURRENT_PAGE' }, '*');
+    } else {
+        console.log("PDF iframe contentWindow not accessible.");
+    }
+}
+
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'CURRENT_PAGE') {
+        console.log("Received current page from PDF.js viewer:", event.data.page);
+        localStorage.setItem('currentPdfPage', event.data.page.toString());
+    }
+});
+
+
 function changeIframeSrc(iframe, src) {
+    const currentPage = localStorage.getItem('currentPdfPage') || 1;
+    // Ensure the page number is part of the src URL immediately
+    const newSrc = `${src}#page=${currentPage}`;
+    console.log(`Loading PDF on page ${currentPage}`);
+
+    iframe.onload = () => {
+        // Optionally, you could still use a slight delay here if needed, but it might not be necessary
+        console.log(`PDF should be loaded on page ${currentPage}`);
+    };
+
     var frame = iframe.cloneNode();
-    frame.src = src;
+    frame.src = newSrc;
     iframe.parentNode.replaceChild(frame, iframe);
 }
 
-document.getElementById('compileBtn').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent form submission
 
-    var formData = new FormData();
-    formData.append('projectId', document.getElementById('projectId').value);
-    formData.append('latexCode', document.getElementById('latexCode').value);
-
-    fetch('/Editor/Compile', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value,
-            'Accept': 'application/json' // Expecting JSON response with base64-encoded PDF
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json(); // Parse response as JSON
-        })
-        .then(data => {
-            if (data.success && data.pdfData) {
-                var byteCharacters = atob(data.pdfData);
-                var byteNumbers = new Array(byteCharacters.length);
-                for (var i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                var byteArray = new Uint8Array(byteNumbers);
-
-                var blob = new Blob([byteArray], {type: 'application/pdf'});
-                var pdfUrl = URL.createObjectURL(blob); // Create a blob URL from the Blob object
-
-                // Use the blob URL with the PDF.js viewer
-                const viewerPath = `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
-
-                // Get the iframe and change its src without affecting history
-                var pdfIframe = document.getElementById('pdfDisplay');
-                changeIframeSrc(pdfIframe, viewerPath);
-
-                // Revoke old PDF blob URL to free memory
-                if (window.previousPdfUrl) {
-                    URL.revokeObjectURL(window.previousPdfUrl);
-                }
-                window.previousPdfUrl = pdfUrl;
-            } else {
-                alert('Failed to load PDF.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to load PDF.');
-        });
-});
-
-
-
-
-
-
-
-
+function navigateToSavedPage() {
+    const currentPage = localStorage.getItem('currentPdfPage') || 1;
+    const pdfIframe = document.getElementById('pdfDisplay');
+    if (pdfIframe && pdfIframe.contentWindow) {
+        // This assumes PDF.js exposes a method or can process a hash change to navigate to a page
+        // There's no direct method without modifying PDF.js, so this is indicative
+        pdfIframe.contentWindow.location.hash = `#page=${currentPage}`;
+        console.log(`Attempted to navigate to page ${currentPage}`);
+    }
+}
