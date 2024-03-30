@@ -1,0 +1,174 @@
+body {
+    background-color: #1B222C;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.projects-container {
+    width: 70%;
+    height: 90vh;
+    margin: 5vh auto;
+    border-radius: 15px;
+    background-color: #E0E0E0;
+}
+
+/* Add to your existing CSS */
+.title-column {
+    width: 40%;
+}
+
+.other-column {
+    width: 20%;
+}
+
+.actions-column {
+    text-align: right;
+}
+
+
+.simplex-logo {
+    padding-top: 30px;
+    display: block;
+    margin: 0 auto 20px;
+    width: 300px; /* Adjusted size */
+}
+
+.new-project-btn {
+    display: block;
+    width: 20%; /* Smaller width */
+    height: 7.5%;
+    padding: 10px;
+    margin: 0 auto 20px; /* Center the button */
+    background-color: #00A811;
+    color: white;
+    border: 2px solid white; /* White outline */
+    border-radius: 10px; /* More rounded edges */
+    cursor: pointer;
+    font-size: 28px; /* Bigger text */
+}
+
+.new-project-btn:hover {
+    background-color: #246B1E;
+}
+
+
+.new-project-btn:hover {
+    background-color: #246B1E;
+}
+
+.projects-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white; /* Make all rows white */
+    border-bottom: 3px solid #E0E0E0; /* Add a grey line as divider */
+}
+
+.projects-table th,
+.projects-table td {
+    border-bottom: 1px solid #E0E0E0; /* Gray line divider */
+    text-align: left;
+    padding: 8px;
+}
+
+.projects-table th {
+    background-color: #f8f9fa;
+}
+
+.projects-table tr:nth-child(even) {
+    background-color: white;
+}
+
+.icon {
+    cursor: pointer;
+}
+
+/* Center "All Projects" heading */
+h2 {
+    padding-top: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    position: relative;
+    background-color: #E0E0E0;
+    margin: auto;
+    padding: 20px;
+    border: 8px solid #1B222C; /* Thick border with page background color */
+    width: 35%;
+    height: 75%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #1B222C;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-logo {
+    width: 200px; /* Small logo size */
+    margin-bottom: 20px;
+}
+
+.modal-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-group {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.modal-label {
+    margin-bottom: 10px; /* Increased spacing */
+    font-size: 22px; /* Increased size */
+    font-weight: bold; /* Bold font */
+    display: block;
+}
+
+.modal-input, .browse-templates-btn, .create-project-btn {
+    width: 50%;
+    padding: 10px;
+    margin: 5px 0; /* For spacing */
+    border-radius: 5px;
+}
+
+.browse-templates-btn, .create-project-btn {
+    background-color: #00A811;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.current-template {
+    font-size: 14px; /* Smaller text for current template */
+}
+
+.create-project-btn {
+    margin-top: 20px; /* Additional spacing before the submit button */
+}

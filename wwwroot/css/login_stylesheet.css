@@ -14,7 +14,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: white;
+    background-color: #E0E0E0;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
@@ -52,6 +52,7 @@
     width: 95%;
     margin-left: auto;
     margin-right: auto;
+    background-color: #E0E0E0;
 }
 
 .login-button, .login-submit {
@@ -180,7 +181,8 @@
 .login-or-text {
     color: #666; /* Darker grey text */
     font-weight: bold;
-    background-color: white; /* Background color similar to the form's background */
+    background-color: #E0E0E0; /* Background color similar to the form's background */
     padding: 0 10px; /* Padding to avoid overlapping with the line */
 }
+
 

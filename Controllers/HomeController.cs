@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using SimpLeX_Frontend.Models;
 
 namespace SimpLeX_Frontend.Controllers;

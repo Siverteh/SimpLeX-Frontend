@@ -1,0 +1,53 @@
+@model SimpLeX_Frontend.Models.ProjectViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Editor Custom StyleSheet -->
+    <link rel="stylesheet" href="~/css/editor_stylesheet.css">
+</head>
+<body>
+<div class="editor-header">
+    <div class="left-buttons">
+        <button class="menu-btn">Menu</button>
+        <button class="home-btn">Home</button>
+    </div>
+    <h1 class="project-title">@ViewData["Title"]</h1>
+    <div class="right-buttons">
+        <button class="share-btn">Share</button>
+        <button class="chat-btn">Chat</button>
+    </div>
+</div>
+<div class="editor-container">
+    <div class="latex-editor">
+        <form asp-controller="Editor" asp-action="Compile" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" id="projectId" name="projectId" value="@Model.ProjectId" />
+            <textarea class="form-control" id="latexCode" name="latexCode" placeholder="Enter LaTeX code here...">@Model.LatexCode</textarea>
+            <!-- <button type="submit" id="compileBtn" class="btn btn-primary">Compile</button> -->
+        </form>
+    </div>
+    <div class="pdf-viewer">
+        <!-- Display PDF if available -->
+        <iframe class="pdfDisplay" id="pdfDisplay" style="width:100%;height:100%;" frameborder="0"></iframe>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/editor_scripts.js"></script>
+</body>
+</html>
