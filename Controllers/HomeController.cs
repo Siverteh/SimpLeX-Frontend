@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using SimpLeX.Models;
+using Microsoft.Extensions.Logging;
+using SimpLeX_Frontend.Models;
 
-namespace SimpLeX.Controllers;
+namespace SimpLeX_Frontend.Controllers;
 
 public class HomeController : Controller
 {

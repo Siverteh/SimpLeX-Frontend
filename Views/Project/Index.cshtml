@@ -1,0 +1,96 @@
+@model IEnumerable<SimpLeX_Frontend.Models.ProjectViewModel>
+
+@{
+    ViewData["Title"] = "Your Projects";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects</title>
+    <link href="~/css/project_stylesheet.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="projects-container">
+    <img src="~/images/simplex_logo.png" alt="Simplex Logo" class="simplex-logo"/>
+    
+    <!-- The Modal Trigger/Open Button -->
+    <button id="createProjectBtn" class="new-project-btn">Create Project</button>
+    
+    @if (ViewBag.ErrorMessage != null)
+        {
+            <div class="alert alert-danger" role="alert">
+                @ViewBag.ErrorMessage
+            </div>
+        }
+    
+    <!-- The Modal -->
+    <div id="createProjectModal" class="modal">
+    
+        <!-- Modal Content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img src="~/images/simplex_logo.png" alt="Simplex Logo" class="modal-logo"/>
+            <form asp-action="CreateProject" asp-controller="Project" method="post" class="modal-form">
+                <div class="form-group">
+                    <label for="projectTitle" class="modal-label">Title</label>
+                    <input type="text" id="projectTitle" name="title" class="modal-input" placeholder="Enter title">
+                </div>
+    
+                <div class="form-group">
+                    <label for="template" class="modal-label">Template</label>
+                    <button type="button" id="browseTemplates" class="browse-templates-btn">Browse Templates</button>
+                    <p class="current-template">Current template: None</p>
+                </div>
+    
+                <div class="form-group">
+                    <label for="projectLabel" class="modal-label">Label</label>
+                    <input type="text" id="projectLabel" name="label" class="modal-input" placeholder="Choose label">
+                </div>
+          
+                <button type="submit" class="create-project-btn">Create Project</button>
+            </form>
+        </div>
+    </div>
+    
+    <h2>All Projects</h2>
+    
+    <table class="projects-table">
+        <thead>
+        <tr>
+            <th class="title-column">Title</th>
+            <th class="other-column">Owner</th>
+            <th class="other-column">Last Modified</th>
+            <th class="other-column actions-column">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach(var project in Model.OrderByDescending(p => p.LastModifiedDate))
+        {
+            <tr>
+                <td class="title-column">
+                    <a href="@Url.Action("Edit", "Editor", new { projectId = project.ProjectId })">@project.Title</a>
+                </td>
+                <td class="other-column">@project.Owner</td>
+                <td class="other-column">@project.LastModifiedDate.ToString("g")</td>
+                <td class="actions-column">
+                    <i class="icon edit-icon">📝</i>
+                    <i class="icon copy-icon">📋</i>
+                    <i class="icon delete-icon">🗑️</i>
+                    <i class="icon pdf-icon">📄</i>
+                    <i class="icon latex-icon">🖋</i>
+                </td>
+            </tr>
+        }
+
+        </tbody>
+    </table>
+</div>
+
+<script src="~/js/project_scripts.js"></script>
+</body>
+</html>

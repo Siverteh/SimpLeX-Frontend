@@ -1,0 +1,188 @@
+/* Login Form Styles */
+
+.login-body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #1B222C;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #E0E0E0;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+    width: 20%;
+    height: 80%;
+    /*max-width: 500px;*/
+    margin: auto;
+}
+
+.login-logo{
+    width: 250px;
+    margin-bottom: 50px;
+}
+
+.login-title {
+    color: #333;
+    text-align: center;
+}
+
+.login-label, .login-input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.form-group{
+    width: 80%;
+}
+
+.login-input, .login-textarea {
+    padding: 15px 10px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    margin-bottom: 25px;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #E0E0E0;
+}
+
+.login-button, .login-submit {
+    display: block;
+    width: 80%;
+    padding: 15px 10px;
+    border: none;
+    border-radius: 50px;
+    background-color: #00A811;
+    color: #fff;
+    cursor: pointer;
+    margin: 0 auto;
+    margin-top: 15px;
+}
+
+.login-button:hover, .login-submit:hover {
+    background-color: #246B1E;
+}
+
+.login-link {
+    text-align: center;
+    display: block;
+    color: #3265B2;
+    margin: 10px;
+}
+
+.login-link:hover {
+    text-decoration: underline;
+}
+
+/* Alert Message Styles */
+.alert {
+    text-align: center;
+    color: white;
+    background-color: #dc3545;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+.login-container .alert {
+    margin: 0 auto 20px auto;
+    width: 95%;
+    max-width: 400px;
+}
+
+/* Google Button Styles */
+.login-google {
+    background-color: #4285F4; /* Google Blue */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 2px;
+    text-align: center;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.login-google img {
+    width: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* GitHub Button Styles */
+.login-github {
+    background-color: #333; /* GitHub Black */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 2px;
+    text-align: center;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.login-github img {
+    width: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+/* OAuth Button Styles */
+.oauth-buttons {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.login-google, .login-github {
+    border: none;
+    background-color: transparent;
+    padding: 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    display: inline-block;
+    transition: filter 0.3s ease; /* Smooth transition for filter effect */
+}
+
+.login-google img, .login-github img {
+    height: 40px; /* Adjust as needed */
+    width: auto;
+}
+
+.login-google:hover, .login-github:hover {
+    filter: brightness(85%); /* Reduce brightness to make button darker on hover */
+}
+
+
+/* Separator Styles */
+.login-or-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 90%; /* Ensure full width */
+    margin: 20px;
+}
+
+.login-or-line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #aaa; /* Light grey line */
+    margin: 0 10px;
+}
+
+.login-or-text {
+    color: #666; /* Darker grey text */
+    font-weight: bold;
+    background-color: #E0E0E0; /* Background color similar to the form's background */
+    padding: 0 10px; /* Padding to avoid overlapping with the line */
+}
+
+
