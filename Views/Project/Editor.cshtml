@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Editor Custom StyleSheet -->
     <link rel="stylesheet" href="~/css/editor_stylesheet.css">
+    
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
 <div class="editor-header">
@@ -28,16 +30,32 @@
         <button class="chat-btn">Chat</button>
     </div>
 </div>
-<div class="editor-container">
-    <div class="latex-editor">
-        <form asp-controller="Editor" asp-action="Compile" method="post">
-            @Html.AntiForgeryToken()
 
-            <input type="hidden" id="projectId" name="projectId" value="@Model.ProjectId" />
-            <textarea class="form-control" id="latexCode" name="latexCode" placeholder="Enter LaTeX code here...">@Model.LatexCode</textarea>
-            <!-- <button type="submit" id="compileBtn" class="btn btn-primary">Compile</button> -->
-        </form>
-    </div>
+<div class="editor-container">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="projectId" name="projectId" value="@Model.ProjectId"/>
+    <div id="quill-editor"></div>
+    <div id="blocklyDiv"></div>
+    <xml id="toolbox">
+        <category name="Document Structure" colour="230">
+            <block type="document_start_block"></block>
+            <block type="section"></block>
+            <block type="subsection"></block>
+            <block type="subsubsection"></block>
+        </category>
+        <category name="Text" colour="160">
+            <block type="text_input_block"></block>
+            <block type="rich_text"></block>
+        </category>
+        <category name="Lists" colour="260">
+            <block type="latex_item"></block>
+            <block type="latex_itemize_list"></block>
+            <block type="latex_enumerate_list"></block>
+            <block type="latex_alph_list"></block>
+            <block type="latex_description_list"></block>
+            <block type="latex_description_item"></block>
+        </category>
+    </xml>
     <div class="pdf-viewer">
         <!-- Display PDF if available -->
         <iframe class="pdfDisplay" id="pdfDisplay" style="width:100%;height:100%;" frameborder="0"></iframe>
@@ -45,9 +63,13 @@
 </div>
 
 <!-- Optional JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
+<!-- Blockly JavaScript -->
+<!-- Include Quill library -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="https://unpkg.com/blockly/blockly.min.js"></script>
+<script src="~/js/Blockly/latex_blocks.js"></script>
+<script src="~/js/editor_scripts.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/editor_scripts.js"></script>
 </body>
 </html>
