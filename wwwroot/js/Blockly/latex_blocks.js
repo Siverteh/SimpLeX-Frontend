@@ -18,31 +18,55 @@ Blockly.Blocks['document_start_block'] = {
 Blockly.JavaScript['document_start_block'] = function(block) {
     var dropdown_class = block.getFieldValue('CLASS');
     var packages = [
-        "\\usepackage[utf8]{inputenc}", // Input encoding
-        "\\usepackage[T1]{fontenc}", // Font encoding
         "\\usepackage{amsmath}", // Advanced math typesetting
         "\\usepackage{amsfonts}", // Math fonts
         "\\usepackage{amssymb}", // Math symbols
         "\\usepackage{graphicx}", // Include graphics
-    ].join('\n');
+        "\\usepackage[a4paper, margin=2cm]{geometry}"
 
-    var code = `\\documentclass{${dropdown_class}}\n${packages}\n\\begin{document}\n\\leavevmode\n`;
+].join('\n');
+
+    var code = `\\documentclass[a4paper,twoside,12pt]{${dropdown_class}}\n${packages}\n\\begin{document}\n\\leavevmode\n`;
     return code;
 };
 
 
 //DOCUMENT STRUCTURE BLOCKS//
 
+Blockly.Blocks['chapter'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Chapter")
+            .appendField(new Blockly.FieldTextInput("Enter chapter name here"), "chapter");
+        this.appendStatementInput("CONTENT")
+            .setCheck(null)
+            .appendField("Content");
+        this.setPreviousStatement(true, ['document_start_block', 'chapter']);
+        this.setNextStatement(true, 'chapter');
+        this.setColour(230);
+        this.setTooltip("Block for creating a chapter in LaTeX");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['chapter'] = function(block) {
+    var text_section_name = block.getFieldValue('chapter');
+    var statements_content = Blockly.JavaScript.statementToCode(block, 'CONTENT');
+    // This now returns the section code with nested content
+    return '\\chapter{' + text_section_name + '}\n' + statements_content;
+};
+
 Blockly.Blocks['section'] = {
     init: function() {
         this.appendDummyInput()
-            .setAlign(Blockly.ALIGN_CENTRE)
-            .appendField("Section");
-        this.appendDummyInput()
+            .appendField("Section")
             .appendField(new Blockly.FieldTextInput("Enter section name here"), "section");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(230);
+        this.appendStatementInput("CONTENT")
+            .setCheck(null)
+            .appendField("Content");
+        this.setPreviousStatement(true, ['document_start_block', 'section']);
+        this.setNextStatement(true, 'section');
+        this.setColour(220);
         this.setTooltip("Block for creating a section in LaTeX");
         this.setHelpUrl("");
     }
@@ -50,52 +74,72 @@ Blockly.Blocks['section'] = {
 
 Blockly.JavaScript['section'] = function(block) {
     var text_section_name = block.getFieldValue('section');
-    // This now returns only the section code
-    return '\\section{' + text_section_name + '}\n';
+    var statements_content = Blockly.JavaScript.statementToCode(block, 'CONTENT');
+    // This now returns the section code with nested content
+    return '\\section{' + text_section_name + '}\n' + statements_content;
 };
 
 Blockly.Blocks['subsection'] = {
     init: function() {
         this.appendDummyInput()
-            .setAlign(Blockly.ALIGN_CENTRE)
-            .appendField("Subsection");
-        this.appendDummyInput()
+            .appendField("Subsection")
             .appendField(new Blockly.FieldTextInput("Enter subsection name here"), "subsection");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(230);
+        this.appendStatementInput("CONTENT")
+            .setCheck(null)
+            .appendField("Content");
+        this.setPreviousStatement(true, 'subsection'); // Connects to a block above
+        this.setNextStatement(true, 'subsection'); // Allows connecting to a block below
+        this.setColour(210);
         this.setTooltip("Block for creating a subsection in LaTeX");
         this.setHelpUrl("");
     }
 };
 
 Blockly.JavaScript['subsection'] = function(block) {
-    var text_section_name = block.getFieldValue('subsection');
-    // This now returns only the section code
-    return '\\subsection{' + text_section_name + '}\n';
+    var text_subsection_name = block.getFieldValue('subsection');
+    var statements_content = Blockly.JavaScript.statementToCode(block, 'CONTENT');
+    // This now returns the subsection code with nested content
+    return '\\subsection{' + text_subsection_name + '}\n' + statements_content;
 };
 
 Blockly.Blocks['subsubsection'] = {
     init: function() {
         this.appendDummyInput()
-            .setAlign(Blockly.ALIGN_CENTRE)
-            .appendField("Subsubsection");
-        this.appendDummyInput()
+            .appendField("Subsubsection")
             .appendField(new Blockly.FieldTextInput("Enter subsubsection name here"), "subsubsection");
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
-        this.setColour(230);
+        this.appendStatementInput("CONTENT")
+            .setCheck(null)
+            .appendField("Content");
+        this.setPreviousStatement(true, 'subsubsection'); // Connects to a block above
+        this.setNextStatement(true, 'subsubsection'); // Allows connecting to a block below
+        this.setColour(200);
         this.setTooltip("Block for creating a subsubsection in LaTeX");
         this.setHelpUrl("");
     }
 };
 
 Blockly.JavaScript['subsubsection'] = function(block) {
-    var text_section_name = block.getFieldValue('subsubsection');
-    // This now returns only the section code
-    return '\\subsubsection{' + text_section_name + '}\n';
+    var text_subsubsection_name = block.getFieldValue('subsubsection');
+    var statements_content = Blockly.JavaScript.statementToCode(block, 'CONTENT');
+    // This now returns the subsubsection code with nested content
+    return '\\subsubsection{' + text_subsubsection_name + '}\n' + statements_content;
 };
 
+Blockly.Blocks['new_page'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("New page");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(230);
+        this.setTooltip("Insert a new page in the document");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['new_page'] = function(block) {
+    return '\\newpage\n';
+}
 
 //DOCUMENT TEXT BLOCKS//
 

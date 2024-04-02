@@ -20,10 +20,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     preventStartBlockDeletion(workspace);
-    ensureDocumentStartBlockExists(workspace);
+    
     Blockly.JavaScript.init(workspace);
     window.workspace = workspace;
 
+    const projectData = document.getElementById('projectData');
+    const workspaceState = projectData.dataset.workspacestate; // Retrieve workspace state
+    if (workspaceState && workspaceState.trim() !== '') {
+        try {
+            const xml = Blockly.utils.xml.textToDom(workspaceState);
+            Blockly.Xml.domToWorkspace(xml, workspace);
+        } catch (e) {
+            console.error('Error parsing workspace state:', e);
+            // Handle error or set up a default state as needed
+        }
+    }
+    else
+    {
+        ensureDocumentStartBlockExists(workspace);
+    }
+    
     function preventStartBlockDeletion(workspace) {
         workspace.addChangeListener(function(event) {
             if (event.type === Blockly.Events.BLOCK_DELETE) {
@@ -42,8 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-
+    
     function ensureDocumentStartBlockExists(workspace) {
         // Check if a document start block already exists
         const existingStartBlocks = workspace.getBlocksByType('document_start_block', false);
@@ -57,10 +72,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function compileAndSave() {
+    function compileAndSave(bool = 1) {
+        const projectId = document.getElementById('projectId').value;
         const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
-        autoSaveLatexContent(latexContent);
-        compileLatexContent(latexContent);
+        const workspaceState = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
+        
+        console.log("WorkspaceState compile and save:", workspaceState)
+        
+        if(bool === 0)
+        {
+            compileLatexContent(projectId, latexContent);
+            return;
+        }
+        
+        autoSaveLatexContent(projectId, latexContent, workspaceState);
+        compileLatexContent(projectId, latexContent);
     }
 
     function debounce(func, wait, immediate) {
@@ -125,52 +151,65 @@ document.addEventListener('DOMContentLoaded', function () {
         return isMeaningfulEvent;
     }
 
-    function compileLatexContent(latexContent) {
-        console.log("Starting compilation process...", latexContent);
-        const projectId = document.getElementById('projectId').value;
-        fetchCompilation(latexContent, projectId);
-    }
+    function compileLatexContent(projectId, latexContent) {
+        console.log("Starting compilation process...");
 
-    function autoSaveLatexContent(latexContent) {
-        const projectId = document.getElementById('projectId').value;
-        console.log("Autosave latex content:", latexContent);
-        fetch('/Editor/ProxySaveLatex', createFetchRequest(projectId, latexContent))
-            .then(handleResponse)
-            .catch(handleError);
-    }
-
-    function fetchCompilation(latexContent, projectId) {
-        fetch('/Editor/Compile', createFetchRequest(projectId, latexContent))
-            .then(handleResponse)
-            .catch(handleError);
-    }
-
-    function createFetchRequest(projectId, latexContent) {
         var formData = new FormData();
         formData.append('projectId', projectId);
         formData.append('latexCode', latexContent);
-        return {
+        
+        fetch('/Editor/Compile', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                // CSRF token header; adjust as needed based on how your application expects it
+                'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value,
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.json(); // Process the response as JSON
+                } else {
+                    throw new Error('Failed to compile');
+                }
+            })
+            .then(data => {
+                if (data.success && data.pdfData) {
+                    // Convert base64-encoded data to a Blob and display the PDF
+                    displayPDF(data.pdfData);
+                } else {
+                    // Handle the case where compilation was successful but no PDF data was returned
+                    alert('Failed to load PDF.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function autoSaveLatexContent(projectId, latexContent, workspaceState) {
+        console.log("Autosaving project...");
+
+        var formData = new FormData();
+        formData.append('projectId', projectId);
+        formData.append('latexCode', latexContent);
+        formData.append('workspaceState', workspaceState);
+
+        fetch('/Editor/ProxySaveLatex', {
             method: 'POST',
             body: formData,
             headers: {
                 'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value,
                 'Accept': 'application/json'
             }
-        };
-    }
-
-    function handleResponse(response) {
-        if (response.ok) {
-            response.json().then(data => {
-                if (data.pdfData) {
-                    displayPDF(data.pdfData);
-                } else {
-                    alert('Failed to load PDF.');
-                }
-            });
-        } else {
-            console.error('Failed to save or compile');
-        }
+        }).then(response => {
+            if (!response.ok) {
+                console.error('Failed to autosave');
+                response.text().then(text => console.error(text));
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        });
     }
 
     function displayPDF(pdfData) {
@@ -188,19 +227,37 @@ document.addEventListener('DOMContentLoaded', function () {
     function updatePDFViewer(pdfUrl) {
         const viewerPath = `/pdfjs/web/viewer.html?file=${encodeURIComponent(pdfUrl)}`;
         var pdfIframe = document.getElementById('pdfDisplay');
-        pdfIframe.src = viewerPath;
         if (window.previousPdfUrl) {
             URL.revokeObjectURL(window.previousPdfUrl);
         }
         window.previousPdfUrl = pdfUrl;
+
+        // Use changeIframeSrc to update the iframe source
+        changeIframeSrc(pdfIframe, viewerPath);
     }
+
+    function changeIframeSrc(iframe, src) {
+        const projectId = document.getElementById('projectId').value;
+        const currentPage = localStorage.getItem('currentPdfPage' + projectId) || 1;
+        // Ensure the page number is part of the src URL immediately
+        const newSrc = `${src}#page=${currentPage}`;
+        console.log(`Loading PDF on page ${currentPage}`);
+
+        iframe.onload = () => {
+            // Optionally, you could still use a slight delay here if needed, but it might not be necessary
+            console.log(`PDF should be loaded on page ${currentPage}`);
+        };
+
+        var frame = iframe.cloneNode();
+        frame.src = newSrc;
+        iframe.parentNode.replaceChild(frame, iframe);
+    }
+
 
     function handleError(error) {
         console.error('Error:', error);
         alert('Failed to process request.');
     }
+
+    compileAndSave(0);
 });
-
-// Here is where the debounce functionality would go if needed.
-// function debounce(func, wait, immediate) {...}
-

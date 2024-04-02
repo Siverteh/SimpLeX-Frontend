@@ -103,7 +103,7 @@ iframe.pdfDisplay {
 
 #blocklyDiv {
     height: 100%;
-    width: 60%;
+    width: 55%;
     overflow: hidden; /* Changed to hide overflow */
     background-color: #E4E5F1;
 }

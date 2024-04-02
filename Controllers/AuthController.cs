@@ -44,8 +44,6 @@ namespace SimpLeX_Frontend.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-
-
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var authResponse = JsonConvert.DeserializeObject<AuthResponse>(responseContent);
 

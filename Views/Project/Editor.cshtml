@@ -22,7 +22,7 @@
 <div class="editor-header">
     <div class="left-buttons">
         <button class="menu-btn">Menu</button>
-        <button class="home-btn">Home</button>
+        <button class="home-btn" onclick="location.href='@Url.Action("GoHome", "Editor")'">Home</button>
     </div>
     <h1 class="project-title">@ViewData["Title"]</h1>
     <div class="right-buttons">
@@ -34,14 +34,18 @@
 <div class="editor-container">
     @Html.AntiForgeryToken()
     <input type="hidden" id="projectId" name="projectId" value="@Model.ProjectId"/>
+    <div id='projectData' data-latexcode='@Model.LatexCode' data-workspacestate='@Html.Raw(Model.WorkspaceState)' style='display: none;'></div>
+    
     <div id="quill-editor"></div>
     <div id="blocklyDiv"></div>
     <xml id="toolbox">
         <category name="Document Structure" colour="230">
             <block type="document_start_block"></block>
+            <block type="chapter"></block>
             <block type="section"></block>
             <block type="subsection"></block>
             <block type="subsubsection"></block>
+            <block type="new_page"></block>
         </category>
         <category name="Text" colour="160">
             <block type="text_input_block"></block>

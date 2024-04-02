@@ -14,11 +14,13 @@ namespace SimpLeX_Frontend.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IMemoryCache _cache;
+        private readonly ILogger<EditorController> _logger;
 
-        public EditorController(IHttpClientFactory httpClientFactory, IMemoryCache cache)
+        public EditorController(IHttpClientFactory httpClientFactory, IMemoryCache cache, ILogger<EditorController> logger)
         {
             _httpClientFactory = httpClientFactory;
             _cache = cache;
+            _logger = logger;
         }
 
         // GET: Editor/Edit/5
@@ -61,7 +63,9 @@ namespace SimpLeX_Frontend.Controllers
         public async Task<IActionResult> Compile(ProjectViewModel model)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var compileRequest = new { ProjectId = model.ProjectId, LatexCode = model.LatexCode };
+            var compileRequest = 
+                new { ProjectId = model.ProjectId, LatexCode = model.LatexCode, WorkspaceState = "" };
+            
             var token = Request.Cookies["JWTToken"];
 
             if (string.IsNullOrEmpty(token))
@@ -80,6 +84,9 @@ namespace SimpLeX_Frontend.Controllers
             {
                 var pdfBytes = await response.Content.ReadAsByteArrayAsync();
                 var pdfBase64 = Convert.ToBase64String(pdfBytes);
+                
+                _logger.LogInformation(pdfBase64);
+                
                 ViewBag.PdfData = pdfBase64;
                 return Json(new { success = true, pdfData = pdfBase64 });
             }
@@ -93,7 +100,7 @@ namespace SimpLeX_Frontend.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProxySaveLatex([FromBody] ProjectViewModel model)
+        public async Task<IActionResult> ProxySaveLatex(ProjectViewModel model)
         {
             var backendServiceUrl = "http://simplex-backend-service:8080/api/Editor/SaveLatex";
             var token = HttpContext.Request.Cookies["JWTToken"]; // Retrieving JWT token from the request cookies
@@ -104,7 +111,8 @@ namespace SimpLeX_Frontend.Controllers
             var latexRequest = new
             {
                 ProjectId = model.ProjectId,
-                LatexCode = model.LatexCode
+                LatexCode = model.LatexCode,
+                WorkspaceState = model.WorkspaceState
             };
 
             var requestContent = new StringContent(JsonConvert.SerializeObject(latexRequest), Encoding.UTF8, "application/json");
@@ -127,6 +135,12 @@ namespace SimpLeX_Frontend.Controllers
                 // If there were errors, forward the status code and response content from the backend service
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
+        }
+        
+        public IActionResult GoHome()
+        {
+            // Redirects to the Index action of the ProjectController
+            return RedirectToAction("Index", "Project");
         }
 
     }
