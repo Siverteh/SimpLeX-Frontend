@@ -85,8 +85,6 @@ namespace SimpLeX_Frontend.Controllers
                 var pdfBytes = await response.Content.ReadAsByteArrayAsync();
                 var pdfBase64 = Convert.ToBase64String(pdfBytes);
                 
-                _logger.LogInformation(pdfBase64);
-                
                 ViewBag.PdfData = pdfBase64;
                 return Json(new { success = true, pdfData = pdfBase64 });
             }
