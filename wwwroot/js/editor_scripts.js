@@ -18,8 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
             scaleSpeed: 1.2
         }
     });
-
-    preventStartBlockDeletion(workspace);
     
     Blockly.JavaScript.init(workspace);
     window.workspace = workspace;
@@ -39,26 +37,12 @@ document.addEventListener('DOMContentLoaded', function () {
     {
         ensureDocumentStartBlockExists(workspace);
     }
-    
-    function preventStartBlockDeletion(workspace) {
-        workspace.addChangeListener(function(event) {
-            if (event.type === Blockly.Events.BLOCK_DELETE) {
-                const blockIds = event.ids; // IDs of blocks being deleted
-                const containsStartBlock = blockIds.some(id => {
-                    const block = workspace.getBlockById(id);
-                    return block && block.type === 'document_start_block';
-                });
 
-                if (containsStartBlock) {
-                    // Directly stop the deletion of the start block
-                    event.preventDefault(); // This only works if Blockly supports it, else use undo
-                    // Blockly.Events.undo(workspace); // Alternative way to undo deletion, but it might not work as expected
-                    alert("The document start block cannot be removed.");
-                }
-            }
-        });
-    }
-    
+
+    workspace.addChangeListener(function(event) {
+        ensureDocumentStartBlockExists(workspace);
+    });
+
     function ensureDocumentStartBlockExists(workspace) {
         // Check if a document start block already exists
         const existingStartBlocks = workspace.getBlocksByType('document_start_block', false);
@@ -69,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
             startBlock.render();
             // Optionally, set the position of the block
             startBlock.moveBy(400, 50);
+            compileAndSave();
         }
     }
 
@@ -153,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function compileLatexContent(projectId, latexContent) {
         console.log("Starting compilation process...");
+        console.log("Latex code:", latexContent);
 
         var formData = new FormData();
         formData.append('projectId', projectId);
