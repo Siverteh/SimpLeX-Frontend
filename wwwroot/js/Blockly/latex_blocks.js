@@ -105,7 +105,6 @@ Blockly.Blocks['document_configuration'] = {
         this.setNextStatement(true, "ConfigBlocks");
         this.setColour(60);
         this.setTooltip("Configures document settings like type, size, orientation, and more.");
-        this.setOutput(true, 'ConfigBlocks');
         this.setHelpUrl("");
     }
 };
@@ -138,7 +137,6 @@ Blockly.Blocks['table_of_contents'] = {
         this.setColour(60);
         this.setTooltip("Adds a table of contents.");
         this.setHelpUrl("");
-        this.setOutput(true, 'ConfigBlocks');
     }
 };
 
@@ -162,7 +160,6 @@ Blockly.Blocks['list_of_figures'] = {
         this.setColour(60);
         this.setTooltip("Adds a list of figures.");
         this.setHelpUrl("");
-        this.setOutput(true, 'ConfigBlocks');
     }
 };
 
@@ -186,7 +183,6 @@ Blockly.Blocks['list_of_tables'] = {
         this.setColour(60);
         this.setTooltip("Adds a list of tables.");
         this.setHelpUrl("");
-        this.setOutput(true, 'ConfigBlocks');
     }
 };
 
@@ -211,7 +207,6 @@ Blockly.Blocks['add_bibliography'] = {
         this.setColour(60);
         this.setTooltip("Adds a bibliography section.");
         this.setHelpUrl("");
-        this.setOutput(true, 'ConfigBlocks');
     }
 };
 
