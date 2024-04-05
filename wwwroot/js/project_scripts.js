@@ -79,68 +79,43 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    
-    const copyModal = document.getElementById('copyProjectModal');
-    const closeCopyModalSpan = copyModal.querySelector('.close');
-    const confirmCopyBtn = document.getElementById('confirmCopyBtn');
+    var copyModal = document.getElementById("copyProjectModal");
 
-    // Function to open the copy project modal with pre-filled data
-    window.openCopyModal = function(projectName, projectId) {
-        document.getElementById('newProjectName').value = projectName + ' (Copy)';
-        document.getElementById('originalProjectId').value = projectId;
-        copyModal.style.display = 'flex';
-    };
+    function openCopyModal(projectTitle, projectId) {
+        // Find the input elements in the "Copy Project" modal
+        var newProjectNameInput = document.getElementById('newProjectName');
+        var originalProjectIdInput = document.getElementById('originalProjectId');
 
-    // Close the modal when the user clicks on <span> (x)
-    closeCopyModalSpan.onclick = function() {
-        copyModal.style.display = 'none';
-    };
+        // Set the value of the title input to the original title plus "(Copy)"
+        newProjectNameInput.value = projectTitle + " (Copy)";
 
-    // Close the modal when the user clicks anywhere outside of it
-    window.onclick = function(event) {
-        if (event.target == copyModal) {
-            copyModal.style.display = 'none';
-        }
-    };
+        // Set the value of the hidden input to the original project ID
+        originalProjectIdInput.value = projectId;
 
-    // Handle copy button click
-    confirmCopyBtn.addEventListener('click', async function() {
-        var Title = document.getElementById('newProjectName').value;
-        var ProjectId = document.getElementById('originalProjectId').value;
+        // Display the modal
+        var copyModal = document.getElementById('copyProjectModal');
+        copyModal.style.display = "flex";
+    }
 
-        // Construct the request payload
-        var payload = {
-            ProjectId: ProjectId,
-            Title: Title // Assuming your ProjectViewModel expects a Title field
+
+    window.openCopyModal = openCopyModal; // Make it accessible globally if it's not already
+
+    var closeCopySpans = copyModal.getElementsByClassName("close");
+    Array.from(closeCopySpans).forEach(span => {
+        span.onclick = function() {
+            copyModal.style.display = "none";
         };
-        
-        console.log(payload);
+    });
 
-        // Fetch API call to your frontend controller's CopyProject action
-        try {
-            const response = await fetch('/Project/CopyProject', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest', // If needed for AJAX detection on server-side
-                    // Authorization header if needed
-                },
-                body: JSON.stringify(payload)
-            });
+    var cancelCopyBtn = copyModal.querySelector(".cancel-btn");
+    cancelCopyBtn.onclick = function() {
+        copyModal.style.display = "none";
+    };
 
-            if(response.ok) {
-                // The project was successfully copied
-                window.location.reload(); // Refresh the page or navigate as needed
-            } else {
-                // Handle failure to copy the project
-                console.error('Failed to copy project. Response status:', response.status);
-            }
-        } catch (error) {
-            console.error('Error copying project:', error);
-        } finally {
-            // Hide the modal regardless of success or failure
-            copyModal.style.display = 'none';
+    window.addEventListener('click', function(event) {
+        if (event.target === copyModal) {
+            copyModal.style.display = "none";
         }
     });
-});    
+});
 

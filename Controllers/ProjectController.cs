@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -81,7 +82,7 @@ namespace SimpLeX_Frontend.Controllers
             };
 
             // Attach the JWT token in Authorization header
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             
             var response = await httpClient.SendAsync(request);
 
@@ -103,37 +104,42 @@ namespace SimpLeX_Frontend.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> CopyProject([FromBody] ProjectViewModel model)
+        public async Task<IActionResult> CopyProject(ProjectViewModel model)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var copyProjectUrl = "http://simplex-backend-service/api/Project/CopyProject";
+            var copyProjectUrl = "http://simplex-backend-service:8080/api/Project/CopyProject";
 
             var token = Request.Cookies["JWTToken"];
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToAction("Login", "Auth");
             }
+            
+            _logger.LogInformation(model.ToString());
 
-            var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, copyProjectUrl)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(new { ProjectId = model.ProjectId, Title = model.Title }), Encoding.UTF8, "application/json")
+            };
             
-            _logger.LogInformation(content.ToString());
+            _logger.LogInformation(request.ToString());
             
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     
-            var response = await httpClient.PostAsync(copyProjectUrl, content);
+            var response = await httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Project");
             }
             else
             {
                 // Handle error
                 ViewBag.ErrorMessage = "Failed to copy the project.";
-                return View("Index");
+                return RedirectToAction("Index", "Project");
             }
         }
-
         
         [HttpGet]
         public async Task<IActionResult> ExportAsPDF(string projectId)
@@ -171,7 +177,7 @@ namespace SimpLeX_Frontend.Controllers
             {
                 // Handle error or return an error message
                 ViewBag.ErrorMessage = "Failed to export the project as PDF.";
-                return View("Index"); // Assume you have an Error view to show error messages
+                return RedirectToAction("Index", "Project"); // Assume you have an Error view to show error messages
             }
         }
 
@@ -213,7 +219,7 @@ namespace SimpLeX_Frontend.Controllers
             {
                 // Handle error or return an error message
                 ViewBag.ErrorMessage = "Failed to export the project.";
-                return View("Index"); // Assume you have an Error view to show error messages
+                return RedirectToAction("Index", "Project"); // Assume you have an Error view to show error messages
             }
         }
         
