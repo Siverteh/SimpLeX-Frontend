@@ -59,9 +59,14 @@ body {
 }
 
 .pdf-viewer {
-    flex: 0 0 40%; /* Assign 40% width */
+    flex-grow: 1;
     height: 100%;
-    overflow: hidden; /* Prevents overflow */
+    overflow: hidden;
+}
+
+iframe.pdfDisplay {
+    width: 100%; /* Ensure the iframe fills the PDF viewer area */
+    height: 100%;
 }
 
 .latex-editor form, #latexCode {
@@ -96,3 +101,16 @@ body {
     height: 100%;
 }
 
+#blocklyDiv {
+    height: 100%;
+    width: 55%;
+    overflow: hidden; /* Changed to hide overflow */
+    background-color: #E4E5F1;
+}
+
+.toolbox {
+    height: 100%;
+    width: 20%; /* Adjust based on your design */
+    float: left;
+    overflow-y: auto; /* Enabled scrolling for the toolbox */
+}
