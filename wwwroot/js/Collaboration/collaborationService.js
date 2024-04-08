@@ -28,36 +28,36 @@ export function initializeCollaboration(projectId) {
 
 // This function updates or displays the cursor for a remote user.
 function updateRemoteCursor(data) {
-    const { userId, x, y } = data;
+    const { userId, userName, x, y } = data; // Including userName in the data
     let cursor = document.getElementById(`cursor-${userId}`);
+    let label;
     if (!cursor) {
-        // If a cursor does not exist for the user, create it.
         cursor = document.createElement('div');
         cursor.id = `cursor-${userId}`;
-        cursor.className = 'remote-cursor'; // Make sure you have CSS to style this cursor.
+        cursor.className = 'remote-cursor';
         document.body.appendChild(cursor);
+
+        // Create a label for the userName
+        label = document.createElement('div');
+        label.id = `label-${userId}`;
+        label.className = 'remote-cursor-label'; // Add appropriate styling for this
+        label.textContent = userName; // Set the userName as text
+        document.body.appendChild(label);
+    } else {
+        // If the cursor already exists, just find the label to update it
+        label = document.getElementById(`label-${userId}`);
     }
-    // Update the position of the cursor.
+
     cursor.style.left = `${x}px`;
     cursor.style.top = `${y}px`;
+
+    // Position the label near the cursor
+    label.style.left = `${x + 20}px`; // Offset by 20px or adjust as needed
+    label.style.top = `${y}px`;
 }
+
 
 // This function sends the local cursor's position to the server.
-export function sendLocalCursorPosition(event) {
-    console.log("Mouse did move"); // Log every time the function is called due to mouse movement
-    const userId = getUserIdFromJWT(); // Retrieve the userId from JWT
-    console.log(userId);
-    if (!userId) return; // Do nothing if userId is not available
-
-    const cursorPosition = {
-        x: event.clientX,
-        y: event.clientY,
-        userId: userId
-    };
-    sendMessage('cursorMove', cursorPosition);
-}
-
-
 export function sendMessage(action, data) {
     const message = JSON.stringify({ Action: action, Data: data });
     if (wsService.socket && wsService.isConnected) {
@@ -68,34 +68,34 @@ export function sendMessage(action, data) {
     }
 }
 
-function getUserIdFromJWT() {
-    const token = localStorage.getItem('JWTToken');
-    if (!token) {
-        console.error('JWTToken not found in localStorage');
-        return null;
-    }
 
+// Make sure this function is async to use await inside
+export async function sendLocalCursorPosition(event) {
+    console.log("Mouse did move");
     try {
-        const base64Url = token.split('.')[1];
-        if (!base64Url) {
-            console.error('JWT structure is incorrect');
-            return null;
+        // Fetching user info instead of just userId
+        const response = await fetch('/Editor/GetUserInfo');
+        if (!response.ok) {
+            throw new Error('Failed to fetch user info');
         }
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(window.atob(base64));
+        const { userId, userName } = await response.json();
 
-        if (!payload.userId) {
-            console.error('userId not found in JWT payload');
-            return null;
+        console.log('User info:', userId, userName); // Log both userId and userName
+
+        if (!userId || !userName) {
+            console.error("No user info found");
+            return; // Do not proceed if user info is not available
         }
 
-        console.log("User id:", payload.userId);
-        return payload.userId;
+        const cursorPosition = {
+            x: event.clientX,
+            y: event.clientY,
+            userId: userId,
+            userName: userName // Including userName in the cursor position object
+        };
+        sendMessage('cursorMove', cursorPosition);
     } catch (error) {
-        console.error('Error decoding JWT:', error);
-        return null;
+        console.error('Error fetching user info:', error);
     }
 }
-
-
 

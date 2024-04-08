@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
@@ -139,6 +141,39 @@ namespace SimpLeX_Frontend.Controllers
         {
             // Redirects to the Index action of the ProjectController
             return RedirectToAction("Index", "Project");
+        }
+        
+        [HttpGet]
+        public IActionResult GetUserInfo()
+        {
+            // Assuming you have a method to decode the JWT and extract the user info
+            var userInfo = GetUserInfoFromJWT(Request.Cookies["JWTToken"]);
+            if(userInfo == null)
+            {
+                return Unauthorized("User is not authenticated.");
+            }
+            return Ok(userInfo);
+        }
+
+        private object GetUserInfoFromJWT(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return null;
+            }
+
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var userName = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value; 
+                return new { UserId = userId, UserName = userName };
+            }
+            catch
+            {
+                return null;
+            }
         }
 
     }

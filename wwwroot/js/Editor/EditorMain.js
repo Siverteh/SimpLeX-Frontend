@@ -42,11 +42,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     compileLatexContent(workspace);
-    
-    document.addEventListener('mousemove', sendLocalCursorPosition);
-    {
-        console.log("Mouse did move")
-    }
+
+    document.addEventListener('mousemove', async (event) => {
+        await sendLocalCursorPosition(event);
+    });
     
 });
 
