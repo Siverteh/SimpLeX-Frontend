@@ -5,7 +5,7 @@ import {
     initializeBlockly,
     shouldAutosave
 } from "./BlocklyScripts.js";
-import { sendLocalCursorPosition, initializeCollaboration } from '../Collaboration/collaborationService.js';
+import { sendLocalCursorPosition, initializeCollaboration, throttle } from '../Collaboration/collaborationService.js';
 
 document.addEventListener('DOMContentLoaded', function () {
     const workspace = initializeBlockly();
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize collaboration service
     const projectId = document.getElementById('projectId').value;
-    initializeCollaboration(projectId);
+    initializeCollaboration(workspace, projectId);
     
     workspace.addChangeListener(function (event) {
         ensureDocumentStartBlockExists(workspace);
@@ -43,27 +43,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     compileLatexContent(workspace);
 
-    document.addEventListener('mousemove', async (event) => {
+    document.addEventListener('mousemove', throttle(async (event) => {
         await sendLocalCursorPosition(event);
-    });
+    }, 50));
 });
 
-
-
-/*function handleBlocklyEvent(event) {
-    const meaningfulChangeEvents = [
-        Blockly.Events.BLOCK_CREATE,
-        Blockly.Events.BLOCK_CHANGE,
-        Blockly.Events.BLOCK_DELETE,
-        Blockly.Events.BLOCK_MOVE
-    ];
-    
-    if (meaningfulChangeEvents.includes(event.type)) {
-        sendMessage(event.type, event.blockId); // Assuming event.type and event.blockId are the correct values to send
-        console.log("Event sent:", event.type, event.blockId);
-    }
-    else
-    {
-        console.log("No event happening");
-    }
-}*/

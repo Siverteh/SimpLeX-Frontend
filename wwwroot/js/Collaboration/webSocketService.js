@@ -22,7 +22,6 @@ export class WebSocketService {
         };
 
         this.socket.onmessage = (event) => {
-            console.log('Message received:', event.data);
             this.handleMessage(event); // Use this method to handle messages
         };
 

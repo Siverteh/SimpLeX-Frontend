@@ -1,6 +1,8 @@
 
 import { WebSocketService } from './webSocketService.js';
 
+import {debounce} from "../Editor/PdfViewerScripts.js";
+
 
 const wsService = new WebSocketService();
 
@@ -12,65 +14,93 @@ function connectToProject(projectId) {
     }
 }
 
-export function initializeCollaboration(projectId) {
+export function initializeCollaboration(workspace, projectId) {
     connectToProject(projectId);
 
-    // Register a listener for cursorMove messages
+    // Enhanced function to handle Blockly workspace changes
+    const handleBlocklyChanges = debounce((event) => {
+        if ([Blockly.Events.MOVE, Blockly.Events.CREATE, Blockly.Events.DELETE, Blockly.Events.CHANGE].includes(event.type)) {
+            const xml = Blockly.Xml.workspaceToDom(workspace);
+            const xmlText = Blockly.Xml.domToText(xml);
+            console.log("Broadcasting Blockly changes:", xmlText);
+            // Send workspace updates as a direct string, now throttled
+            sendMessage('blocklyUpdate', xmlText);
+        }
+    }, 500)
+
+    // Listen to Blockly workspace changes
+    workspace.addChangeListener(handleBlocklyChanges);
+
+    // Handle incoming Blockly updates
+    wsService.onMessage('blocklyUpdate', (data) => {
+        // Temporary remove the listener to prevent sending back the received changes
+        workspace.removeChangeListener(handleBlocklyChanges);
+        console.log("onMessage blocklyUpdate:", data.toString());
+
+        // Apply the Blockly changes received from other users
+        const xml = Blockly.utils.xml.textToDom(data);
+        Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
+
+        // Re-apply the listener after changes are made
+        workspace.addChangeListener(handleBlocklyChanges);
+    });
+
+    // Listen for cursor movement updates
     wsService.onMessage('cursorMove', updateRemoteCursor);
+}
+
+// sendMessage function adjusted to match backend expectations
+export function sendMessage(action, data) {
+    // Ensuring data is sent as a direct string under 'Data'
+    const message = JSON.stringify({ Action: action, Data: data });
+    if (wsService.socket && wsService.isConnected) {
+        wsService.socket.send(message);
+    } else {
+        console.error('WebSocket is not connected.');
+    }
 }
 
 
 // This function updates or displays the cursor for a remote user.
-// This function updates or displays the cursor for a remote user.
+// Cursor cache to store references to cursor and label elements
+const cursorCache = {};
+
 function updateRemoteCursor(data) {
-    console.log("Started updateRemoteCursor function");
-    const { userId, userName, x, y, isVisible } = data; // Assuming isVisible is a boolean indicating cursor visibility
+    const { userId, userName, x, y, isVisible } = data;
 
-    let cursor = document.getElementById(`cursor-${userId}`);
-    let label = document.getElementById(`label-${userId}`);
+    // Check if the cursor is already cached
+    let cursor = cursorCache[userId]?.cursor;
+    let label = cursorCache[userId]?.label;
 
+    // If not in cache, create and cache it
     if (!cursor) {
-        // Create the cursor element if it doesn't exist
         cursor = document.createElement('div');
         cursor.id = `cursor-${userId}`;
         cursor.className = 'remote-cursor';
         document.body.appendChild(cursor);
 
-        // Create a label for the userName
         label = document.createElement('div');
         label.id = `label-${userId}`;
-        label.className = 'remote-cursor-label'; // Make sure to have CSS for this class
+        label.className = 'remote-cursor-label';
         label.textContent = userName;
         document.body.appendChild(label);
+
+        // Add to cache
+        cursorCache[userId] = { cursor, label };
     }
 
+    // Update cursor and label visibility based on isVisible
     if (isVisible) {
-        // If cursor is supposed to be visible, update position and show it
         cursor.style.left = `${x}px`;
         cursor.style.top = `${y}px`;
-        cursor.style.display = ''; // Show the cursor
+        cursor.style.display = ''; // Show cursor
 
-        // Position and show the label near the cursor
-        label.style.left = `${x + 20}px`; // Adjust the offset as needed
+        label.style.left = `${x + 20}px`;
         label.style.top = `${y}px`;
-        label.style.display = ''; // Show the label
+        label.style.display = ''; // Show label
     } else {
-        // Hide the cursor and label if not supposed to be visible
-        cursor.style.display = 'none';
-        label.style.display = 'none';
-    }
-}
-
-
-
-// This function sends the local cursor's position to the server.
-export function sendMessage(action, data) {
-    const message = JSON.stringify({ Action: action, Data: data });
-    if (wsService.socket && wsService.isConnected) {
-        wsService.socket.send(message);
-        //console.log("Message sent:", message);
-    } else {
-        console.error('WebSocket is not connected.');
+        cursor.style.display = 'none'; // Hide cursor
+        label.style.display = 'none'; // Hide label
     }
 }
 
@@ -87,14 +117,13 @@ export async function sendLocalCursorPosition(event) {
     const toolboxRect = document.getElementById('toolbox').getBoundingClientRect();
     const pdfViewerRect = document.getElementById('pdfDisplay').getBoundingClientRect();
 
-    // Calculate combined area for visibility checks with a margin for leniency
-    const margin = -50; // pixels of leniency on each side
-    const combinedLeft = Math.min(blocklyWorkspaceRect.left, toolboxRect.left, pdfViewerRect.left) - margin;
-    const combinedTop = Math.min(blocklyWorkspaceRect.top, toolboxRect.top, pdfViewerRect.top) - margin;
-    const combinedRight = Math.max(blocklyWorkspaceRect.right, toolboxRect.right, pdfViewerRect.right) + margin;
-    const combinedBottom = Math.max(blocklyWorkspaceRect.bottom, toolboxRect.bottom, pdfViewerRect.bottom) + margin;
+    // Calculate combined area for visibility checks
+    const combinedLeft = Math.min(blocklyWorkspaceRect.left, toolboxRect.left, pdfViewerRect.left);
+    const combinedTop = Math.min(blocklyWorkspaceRect.top, toolboxRect.top, pdfViewerRect.top);
+    const combinedRight = Math.max(blocklyWorkspaceRect.right, toolboxRect.right, pdfViewerRect.right);
+    const combinedBottom = Math.max(blocklyWorkspaceRect.bottom, toolboxRect.bottom, pdfViewerRect.bottom);
 
-    // Determine if the cursor is within the combined area with leniency
+    // Determine if the cursor is within the combined area
     let isVisible = event.clientX >= combinedLeft && event.clientX <= combinedRight &&
         event.clientY >= combinedTop && event.clientY <= combinedBottom;
 
@@ -109,3 +138,13 @@ export async function sendLocalCursorPosition(event) {
     sendMessage('cursorMove', cursorPosition);
 }
 
+
+export function throttle(callback, delay) {
+    let lastCall = 0;
+    return function(...args) {
+        const now = new Date().getTime();
+        if (now - lastCall < delay) return;
+        lastCall = now;
+        callback(...args);
+    };
+}

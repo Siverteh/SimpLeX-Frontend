@@ -76,3 +76,4 @@ export function compileConnectedBlocks(workspace) {
     let code = Blockly.JavaScript.blockToCode(startBlock);
     return code;
 }
+
