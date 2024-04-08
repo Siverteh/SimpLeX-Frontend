@@ -135,5 +135,10 @@ iframe.pdfDisplay {
     white-space: nowrap;
 }
 
+.remote-cursor, .remote-cursor-label {
+    z-index: 10000; /* Adjust as needed to ensure visibility */
+    position: absolute;
+    /* other styles */
+}
 
 

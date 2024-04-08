@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('mousemove', async (event) => {
         await sendLocalCursorPosition(event);
     });
-    
 });
 
 

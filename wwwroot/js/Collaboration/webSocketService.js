@@ -22,13 +22,10 @@ export class WebSocketService {
         };
 
         this.socket.onmessage = (event) => {
-            console.log('Message:', event.data);
-            const message = JSON.parse(event.data);
-            if (message.action === 'blockChange') {
-                // Apply the block change (make sure this function is defined)
-                applyBlockChange(message.data);
-            }
+            console.log('Message received:', event.data);
+            this.handleMessage(event); // Use this method to handle messages
         };
+
 
         this.socket.onclose = () => {
             console.log('WebSocket Disconnected');
@@ -48,10 +45,12 @@ export class WebSocketService {
 
     handleMessage(event) {
         const message = JSON.parse(event.data);
+        // Adjust to match the case and structure of your actual message
         if (this.listeners[message.Action]) {
             this.listeners[message.Action].forEach(callback => callback(message.Data));
         }
     }
+
 
     sendMessage(action, data) {
         if (this.isConnected) {
