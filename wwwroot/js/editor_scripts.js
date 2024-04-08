@@ -1,3 +1,5 @@
+import { connectToProject, sendMessage } from './Collaboration/collaborationService.js';
+
 document.addEventListener('DOMContentLoaded', function () {
     const toolbox = document.getElementById('toolbox');
     const workspace = Blockly.inject('blocklyDiv', {
@@ -62,8 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
         const workspaceState = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
         
-        console.log("WorkspaceState compile and save:", workspaceState)
-        
         if(bool === 0)
         {
             compileLatexContent(projectId, latexContent);
@@ -88,9 +88,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (callNow) func.apply(context, args);
         };
     }
+    
     workspace.addChangeListener(debounce(function (event) {
         // Check if the event should trigger an autosave
         // Avoid autosaving on events like selecting a block or scrolling the workspace
+        handleBlocklyEvent(event);
         if (shouldAutosave(event)) {
             compileAndSave();
         }
@@ -137,9 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function compileLatexContent(projectId, latexContent) {
-        console.log("Starting compilation process...");
-        console.log("Latex code:", latexContent);
-
         var formData = new FormData();
         formData.append('projectId', projectId);
         formData.append('latexCode', latexContent);
@@ -174,8 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function autoSaveLatexContent(projectId, latexContent, workspaceState) {
-        console.log("Autosaving project...");
-
         var formData = new FormData();
         formData.append('projectId', projectId);
         formData.append('latexCode', latexContent);
@@ -227,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const currentPage = localStorage.getItem('currentPdfPage' + projectId) || 1;
         // Ensure the page number is part of the src URL immediately
         const newSrc = `${src}#page=${currentPage}`;
-        console.log(`Loading PDF on page ${currentPage}`);
 
         iframe.onload = () => {
             // Optionally, you could still use a slight delay here if needed, but it might not be necessary
@@ -246,4 +242,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     compileAndSave(0);
+
+    const projectId = document.getElementById('projectId').value;
+    connectToProject(projectId);
+
+    workspace.addChangeListener(function(event) {
+        console.log(event);
+        handleBlocklyEvent(event);
+    });
+    
+
+    // Function to handle Blockly events and send messages via WebSocket
+    function handleBlocklyEvent(event) {
+        if (["block_create", "block_move", "block_change", "block_delete", "BLOCK_CREATE", "BLOCK_MOVE", "BLOCK_CHANGE"].includes(event.type)) {
+            sendMessage(event.type, event.blockId); // Assuming event.type and event.blockId are the correct values to send
+            console.log("Event sent:", event.type, event.blockId);
+        }
+        else
+        {
+            console.log("No event happening");
+        }
+    }
 });
+
+// Example Blockly event handler to send block changes
+
+

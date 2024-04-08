@@ -114,3 +114,13 @@ iframe.pdfDisplay {
     float: left;
     overflow-y: auto; /* Enabled scrolling for the toolbox */
 }
+
+.remote-cursor {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: red; /* Make the cursor stand out */
+    pointer-events: none; /* Ensure it doesn't interfere with other interactions */
+}
+
