@@ -114,3 +114,31 @@ iframe.pdfDisplay {
     float: left;
     overflow-y: auto; /* Enabled scrolling for the toolbox */
 }
+
+.remote-cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: url('images/cursor.png') no-repeat center; /* Adjusted path to your cursor icon */
+    background-size: contain;
+    pointer-events: none; /* Make sure the cursor doesn't interfere with other elements */
+}
+
+.remote-cursor-label {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    background-color: #000;
+    color: #fff;
+    padding: 2px 5px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.remote-cursor, .remote-cursor-label {
+    z-index: 10000; /* Adjust as needed to ensure visibility */
+    position: absolute;
+    /* other styles */
+}
+
+
