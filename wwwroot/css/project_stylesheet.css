@@ -78,10 +78,6 @@ body {
     background-color: white;
 }
 
-.icon {
-    cursor: pointer;
-}
-
 /* Center "All Projects" heading */
 h2 {
     padding-top: 20px;
@@ -171,4 +167,144 @@ h2 {
 
 .create-project-btn {
     margin-top: 20px; /* Additional spacing before the submit button */
+}
+
+.actions-column {
+    text-align: right;
+    white-space: nowrap; /* Prevent wrapping of content */
+}
+
+/* General icon style adjustments */
+.icon {
+    position: relative; /* This is crucial for positioning the ::after content */
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: color 0.3s ease; /* Smooth transition for color or other properties */
+    background: transparent;
+    border: none;
+    margin-right: 10px; /* Right margin for spacing between icons */
+}
+
+/* Adjust hover text appearance for better positioning */
+.icon:hover::after {
+    content: attr(data-hover-text);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateY(-200%); /* Move up relative to the icon */
+    margin-bottom: 15px; /* Additional space between icon and text */
+    white-space: nowrap;
+    z-index: 1000; /* Ensure visibility over other elements */
+    background: #333; /* Background color of the hover text */
+    color: #fff; /* Text color */
+    padding: 3px 6px; /* Padding around text */
+    border-radius: 4px; /* Rounded corners for the hover text background */
+    font-size: 12px; /* Font size of the hover text */
+    display: block; /* Ensure display */
+    visibility: visible; /* Ensure visibility on hover */
+    opacity: 0; /* Start hidden for a fade-in effect */
+    transition: opacity 0.3s ease; /* Transition for the fade-in effect */
+}
+
+/* Show hover text when icon is hovered */
+.icon:hover::after {
+    opacity: 1; /* Fade in the hover text */
+}
+
+/* Hover effect for icons */
+.icon:hover {
+    color: #1177ee; /* Example hover color for the icon */
+}
+
+/* Ensuring that the delete icon has a similar hover effect */
+.delete-icon:hover {
+    color: #ee1111; /* Different color for delete icon hover state */
+}
+
+
+
+/* Adjustments for buttons within modals to have a consistent look */
+.delete-btn, .cancel-btn, .copy-btn {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px; /* Adjust font size */
+    display: inline-block; /* Align with other content */
+}
+
+.delete-btn, .cancel-btn .copy-btn {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px; /* Adjust font size */
+    transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
+
+.copy-btn {
+    background-color: #4CAF50; /* Green */
+    color: #fff;
+}
+
+.copy-btn:hover {
+    background-color: #45a049; /* Darker shade of green on hover */
+}
+
+/* Continue using the existing styles for .cancel-btn as you have them */
+
+.modal-action-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Styles for the close button and modal-content as already defined */
+
+
+.delete-btn {
+    background-color: #ff4444; /* Original color */
+    color: #fff;
+}
+
+.delete-btn:hover {
+    background-color: #cc3333; /* Darker shade on hover */
+}
+
+.cancel-btn {
+    background-color: #ccc; /* Original color */
+    color: #333;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb; /* Slightly darker shade on hover */
+}
+
+
+/* Specific modal styles */
+#createProjectModal .modal-content, #deleteConfirmationModal .modal-content {
+    width: 30%; /* Adjust width for modals */
+}
+
+#createProjectModal h3, #deleteConfirmationModal h3 {
+    margin: 20px 0;
+}
+
+/* Adjustments for delete confirmation modal specifically */
+#deleteConfirmationModal .modal-content {
+    height: auto; /* Auto height for delete modal */
+}
+
+#deleteConfirmationModal .delete-btn, #deleteConfirmationModal .cancel-btn {
+    width: auto; /* Auto width for buttons in delete modal */
+}
+
+#copyProjectModal .modal-content {
+    height: auto; /* Auto height for delete modal */
+}
+
+#copyProjectModal .delete-btn, #deleteConfirmationModal .cancel-btn {
+    width: auto; /* Auto width for buttons in delete modal */
 }

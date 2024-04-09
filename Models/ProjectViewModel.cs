@@ -8,8 +8,8 @@ namespace SimpLeX_Frontend.Models
         public string ProjectId { get; set; } // Unique identifier for the project
         public string Title { get; set; } // Title of the project
         public string Owner { get; set; }
-        
         public string LatexCode { get; set; }
+        public string WorkspaceState { get; set; }
         
         public string UserId { get; set; } // Owner of the project
         public DateTime LastModifiedDate { get; set; } // Last modified date/time of the project
