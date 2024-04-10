@@ -29,26 +29,28 @@ namespace SimpLeX_Frontend.Controllers
             var token = Request.Cookies["JWTToken"];
             if (string.IsNullOrEmpty(token))
             {
-                // Indicate that a redirect is necessary
-                return null;
+                // Log this situation if needed
+                _logger.LogWarning("JWT Token is missing. User is probably not logged in.");
+                return null; // Indicate that a redirect to the login might be necessary
             }
-            
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+    
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    
             var response = await httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 var projectsJson = await response.Content.ReadAsStringAsync();
                 var projects = JsonConvert.DeserializeObject<IEnumerable<ProjectViewModel>>(projectsJson);
-
-                return projects ?? new List<ProjectViewModel>();
+                return projects ?? new List<ProjectViewModel>(); // Safeguard against null
             }
             else
             {
-                // Handle error or return an empty list
+                // Log the specific error
+                _logger.LogError("Failed to fetch projects: {StatusCode}. Reason: {ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
                 return new List<ProjectViewModel>();
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Index()
