@@ -25,59 +25,81 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    const deleteModal = document.getElementById('deleteConfirmationModal');
-    const closeDeleteModal = deleteModal.querySelector('.close');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    let projectIdToDelete;
+    var deleteModal = document.getElementById('deleteConfirmationModal');
+    var deleteSpan = deleteModal.querySelector('.close');
+    var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    let projectIdToDelete = null;
 
-    document.querySelectorAll('.delete-icon').forEach(button => {
-        button.addEventListener('click', function() {
-            const projectName = this.getAttribute('data-project-name');
-            projectIdToDelete = this.getAttribute('data-project-id');
-            document.getElementById('deleteProjectName').textContent = `${projectName}`;
-            deleteModal.style.display = 'flex';
-        });
-    });
+    var leaveModal = document.getElementById('leaveConfirmationModal');
+    var leaveSpan = leaveModal.querySelector('.close');
+    var confirmLeaveBtn = document.getElementById('confirmLeaveBtn');
+    let projectIdToLeave = null;
 
-    confirmDeleteBtn.addEventListener('click', async function() {
-        // Adjust the URL to match the route to your frontend controller's action
-        const deleteUrl = `/Project/DeleteProject?projectId=${projectIdToDelete}`;
+    window.confirmDelete = function(projectId, projectName) {
+        projectIdToDelete = projectId;
+        document.getElementById('deleteProjectName').textContent = projectName;
+        deleteModal.style.display = 'flex';
+    };
 
+    deleteSpan.onclick = function() {
+        deleteModal.style.display = 'none';
+    };
+
+    confirmDeleteBtn.onclick = async function() {
         try {
-            const response = await fetch(deleteUrl, {
+            const response = await fetch(`/Project/DeleteProject?projectId=${projectIdToDelete}`, {
                 method: 'POST',
-                headers: {
-                    // Add any necessary headers here
-                    'X-Requested-With': 'XMLHttpRequest' // Example header
-                }
-                // No need to set the body for a simple query string request
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
             });
 
             if (response.ok) {
-                // The project was successfully deleted
-                // Refresh the page to reflect the deletion
                 window.location.reload();
             } else {
-                // Handle the error case
-                console.error('Failed to delete project. Response status:', response.status);
+                console.error('Failed to delete the project.');
             }
         } catch (error) {
             console.error('Error deleting project:', error);
         }
-
-        // Hide the modal after attempting deletion
         deleteModal.style.display = 'none';
-    });
+    };
 
-    closeDeleteModal.addEventListener('click', function() {
-        deleteModal.style.display = 'none';
-    });
+    window.leaveProject = function(projectId, projectName) {
+        projectIdToLeave = projectId;
+        document.getElementById('leaveProjectName').textContent = projectName;
+        leaveModal.style.display = 'flex';
+    };
 
-    window.addEventListener('click', function(event) {
-        if (event.target == deleteModal) {
+    leaveSpan.onclick = function() {
+        leaveModal.style.display = 'none';
+    };
+
+    confirmLeaveBtn.onclick = async function() {
+        try {
+            const response = await fetch(`/Project/LeaveProject?projectId=${projectIdToLeave}`, {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Failed to leave the project.');
+            }
+        } catch (error) {
+            console.error('Error leaving project:', error);
+        }
+        leaveModal.style.display = 'none';
+    };
+
+    // Close modals if the user clicks outside of them
+    window.onclick = function(event) {
+        if (event.target === deleteModal) {
             deleteModal.style.display = 'none';
         }
-    });
+        if (event.target === leaveModal) {
+            leaveModal.style.display = 'none';
+        }
+    };
     
     var copyModal = document.getElementById("copyProjectModal");
 

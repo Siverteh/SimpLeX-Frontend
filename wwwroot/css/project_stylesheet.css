@@ -221,6 +221,10 @@ h2 {
     color: #ee1111; /* Different color for delete icon hover state */
 }
 
+/* Ensuring that the delete icon has a similar hover effect */
+.leave-icon:hover {
+    color: #ee1111; /* Different color for delete icon hover state */
+}
 
 
 /* Adjustments for buttons within modals to have a consistent look */
@@ -297,7 +301,15 @@ h2 {
     height: auto; /* Auto height for delete modal */
 }
 
-#deleteConfirmationModal .delete-btn, #deleteConfirmationModal .cancel-btn {
+#deleteConfirmationModal .delete-btn, #leaveConfirmationModal .cancel-btn {
+    width: auto; /* Auto width for buttons in delete modal */
+}
+
+#leaveConfirmationModal .modal-content {
+    height: auto; /* Auto height for delete modal */
+}
+
+#leaveConfirmationModal .delete-btn, #leaveConfirmationModal .cancel-btn {
     width: auto; /* Auto width for buttons in delete modal */
 }
 
