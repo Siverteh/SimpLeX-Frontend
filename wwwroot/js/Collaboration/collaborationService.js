@@ -26,7 +26,7 @@ export function initializeCollaboration(workspace, projectId) {
             // Send workspace updates as a direct string, now throttled
             sendMessage('blocklyUpdate', xmlText);
         }
-    }, 500)
+    }, 100)
 
     // Listen to Blockly workspace changes
     workspace.addChangeListener(handleBlocklyChanges);
@@ -104,7 +104,7 @@ function updateRemoteCursor(data) {
     }
 }
 
-export async function sendLocalCursorPosition(event) {
+export async function sendLocalCursorPosition(event, workspace) {
     const response = await fetch('/Editor/GetUserInfo');
     if (!response.ok) {
         console.error('Failed to fetch user info');
@@ -112,27 +112,25 @@ export async function sendLocalCursorPosition(event) {
     }
     const { userId, userName } = await response.json();
 
-    // Get the bounding rectangles
-    const blocklyWorkspaceRect = document.getElementById('blocklyDiv').getBoundingClientRect();
-    const toolboxRect = document.getElementById('toolbox').getBoundingClientRect();
-    const pdfViewerRect = document.getElementById('pdfDisplay').getBoundingClientRect();
+    // Obtain the workspace SVG element
+    const svgElement = workspace.getParentSvg();
 
-    // Calculate combined area for visibility checks
-    const combinedLeft = Math.min(blocklyWorkspaceRect.left, toolboxRect.left, pdfViewerRect.left);
-    const combinedTop = Math.min(blocklyWorkspaceRect.top, toolboxRect.top, pdfViewerRect.top);
-    const combinedRight = Math.max(blocklyWorkspaceRect.right, toolboxRect.right, pdfViewerRect.right);
-    const combinedBottom = Math.max(blocklyWorkspaceRect.bottom, toolboxRect.bottom, pdfViewerRect.bottom);
+    // Use Blockly's utils.browserEvents.mouseToSvg function to translate mouse event coordinates
+    // Need to obtain the inverted screen CTM (Current Transformation Matrix)
+    const ctm = svgElement.getScreenCTM();
+    const matrix = ctm ? ctm.inverse() : null;
+    const svgPoint = Blockly.utils.browserEvents.mouseToSvg(event, svgElement, matrix);
 
-    // Determine if the cursor is within the combined area
-    let isVisible = event.clientX >= combinedLeft && event.clientX <= combinedRight &&
-        event.clientY >= combinedTop && event.clientY <= combinedBottom;
+    // Check if the SVGPoint is within the visible workspace bounds for cursor visibility
+    let isVisible = svgPoint.x >= 0 && svgPoint.y >= 0 &&
+        svgPoint.x <= workspace.getWidth() && svgPoint.y <= workspace.getHeight();
 
     const cursorPosition = {
-        x: event.clientX,
-        y: event.clientY,
+        x: svgPoint.x,
+        y: svgPoint.y,
         userId,
         userName,
-        isVisible // This flag determines if the cursor should be displayed or not
+        isVisible
     };
 
     sendMessage('cursorMove', cursorPosition);

@@ -119,7 +119,7 @@ iframe.pdfDisplay {
     position: absolute;
     width: 20px;
     height: 20px;
-    background: url('images/cursor.png') no-repeat center; /* Adjusted path to your cursor icon */
+    background: url('../images/cursor.png') no-repeat center; /* Adjusted path to your cursor icon */
     background-size: contain;
     pointer-events: none; /* Make sure the cursor doesn't interfere with other elements */
 }
