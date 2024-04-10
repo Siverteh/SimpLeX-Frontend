@@ -3,6 +3,9 @@ import { WebSocketService } from './webSocketService.js';
 
 import {debounce} from "../Editor/PdfViewerScripts.js";
 
+import {shouldAutosave} from "../Editor/BlocklyScripts.js";
+
+import {autoSaveLatexContent, compileLatexContent} from "../Editor/PdfViewerScripts.js";
 
 const wsService = new WebSocketService();
 
@@ -19,29 +22,39 @@ export function initializeCollaboration(workspace, projectId) {
 
     // Enhanced function to handle Blockly workspace changes
     const handleBlocklyChanges = debounce((event) => {
-        if ([Blockly.Events.MOVE, Blockly.Events.CREATE, Blockly.Events.DELETE, Blockly.Events.CHANGE].includes(event.type)) {
+        if (shouldAutosave(event, workspace)) {
             const xml = Blockly.Xml.workspaceToDom(workspace);
             const xmlText = Blockly.Xml.domToText(xml);
-            console.log("Broadcasting Blockly changes:", xmlText);
-            // Send workspace updates as a direct string, now throttled
+            autoSaveLatexContent(workspace);
+            compileLatexContent(workspace);
+            sendMessage('blocklyUpdateImportant', xmlText);  // Send only meaningful updates
+        }
+        else if ([Blockly.Events.MOVE, Blockly.Events.CREATE, Blockly.Events.DELETE, Blockly.Events.CHANGE].includes(event.type)) 
+        {
+            const xml = Blockly.Xml.workspaceToDom(workspace);
+            const xmlText = Blockly.Xml.domToText(xml);
+
             sendMessage('blocklyUpdate', xmlText);
         }
-    }, 100)
+    }, 100);
+
 
     // Listen to Blockly workspace changes
     workspace.addChangeListener(handleBlocklyChanges);
 
     // Handle incoming Blockly updates
-    wsService.onMessage('blocklyUpdate', (data) => {
-        // Temporary remove the listener to prevent sending back the received changes
+    wsService.onMessage('blocklyUpdateImportant', (data) => {
         workspace.removeChangeListener(handleBlocklyChanges);
-        console.log("onMessage blocklyUpdate:", data.toString());
-
-        // Apply the Blockly changes received from other users
         const xml = Blockly.utils.xml.textToDom(data);
         Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
-
-        // Re-apply the listener after changes are made
+        autoSaveLatexContent(workspace);
+        compileLatexContent(workspace);
+        workspace.addChangeListener(handleBlocklyChanges);
+    });
+    wsService.onMessage('blocklyUpdate', (data) => {
+        workspace.removeChangeListener(handleBlocklyChanges);
+        const xml = Blockly.utils.xml.textToDom(data);
+        Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
         workspace.addChangeListener(handleBlocklyChanges);
     });
 
@@ -104,35 +117,36 @@ function updateRemoteCursor(data) {
     }
 }
 
-export async function sendLocalCursorPosition(event, workspace) {
+export async function sendLocalCursorPosition(event) {
     const response = await fetch('/Editor/GetUserInfo');
     if (!response.ok) {
         console.error('Failed to fetch user info');
         return;
     }
-    const { userId, userName } = await response.json();
+    const {userId, userName} = await response.json();
 
-    // Obtain the workspace SVG element
-    const svgElement = workspace.getParentSvg();
+    // Get the bounding rectangles
+    const blocklyWorkspaceRect = document.getElementById('blocklyDiv').getBoundingClientRect();
+    const toolboxRect = document.getElementById('toolbox').getBoundingClientRect();
+    const pdfViewerRect = document.getElementById('pdfDisplay').getBoundingClientRect();
 
-    // Use Blockly's utils.browserEvents.mouseToSvg function to translate mouse event coordinates
-    // Need to obtain the inverted screen CTM (Current Transformation Matrix)
-    const ctm = svgElement.getScreenCTM();
-    const matrix = ctm ? ctm.inverse() : null;
-    const svgPoint = Blockly.utils.browserEvents.mouseToSvg(event, svgElement, matrix);
+    // Calculate combined area for visibility checks
+    const combinedLeft = Math.min(blocklyWorkspaceRect.left, toolboxRect.left, pdfViewerRect.left);
+    const combinedTop = Math.min(blocklyWorkspaceRect.top, toolboxRect.top, pdfViewerRect.top);
+    const combinedRight = Math.max(blocklyWorkspaceRect.right, toolboxRect.right, pdfViewerRect.right);
+    const combinedBottom = Math.max(blocklyWorkspaceRect.bottom, toolboxRect.bottom, pdfViewerRect.bottom);
 
-    // Check if the SVGPoint is within the visible workspace bounds for cursor visibility
-    let isVisible = svgPoint.x >= 0 && svgPoint.y >= 0 &&
-        svgPoint.x <= workspace.getWidth() && svgPoint.y <= workspace.getHeight();
+    // Determine if the cursor is within the combined area
+    let isVisible = event.clientX >= combinedLeft && event.clientX <= combinedRight &&
+        event.clientY >= combinedTop && event.clientY <= combinedBottom;
 
     const cursorPosition = {
-        x: svgPoint.x,
-        y: svgPoint.y,
+        x: event.clientX,
+        y: event.clientY,
         userId,
         userName,
-        isVisible
+        isVisible // This flag determines if the cursor should be displayed or not
     };
-
     sendMessage('cursorMove', cursorPosition);
 }
 
