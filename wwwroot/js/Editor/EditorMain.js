@@ -30,17 +30,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize collaboration service
     const projectId = document.getElementById('projectId').value;
     initializeCollaboration(workspace, projectId);
-    
+
     workspace.addChangeListener(function (event) {
         ensureDocumentStartBlockExists(workspace);
-
-        //handleBlocklyEvent(event);
-        
-        if (shouldAutosave(event)) {
-            autoSaveLatexContent(workspace);
-            compileLatexContent(workspace);
-        }
     });
+
     compileLatexContent(workspace);
 
     document.addEventListener('mousemove', throttle(async (event) => {

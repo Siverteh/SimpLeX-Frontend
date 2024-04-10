@@ -175,6 +175,59 @@ namespace SimpLeX_Frontend.Controllers
                 return null;
             }
         }
+        
+        [HttpGet("ProxyShare/{projectId}")]
+        public async Task<IActionResult> ProxyShare(string projectId)
+        {
+            var backendServiceUrl = $"http://simplex-backend-service:8080/api/Editor/Share/{projectId}";
+            var token = HttpContext.Request.Cookies["JWTToken"]; // Retrieving JWT token from the request cookies
 
+            var httpClient = _httpClientFactory.CreateClient();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.GetAsync(backendServiceUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var linkJson = await response.Content.ReadAsStringAsync();
+                return Content(linkJson, "application/json");
+            }
+            else
+            {
+                // If there were errors, log them and return an error message
+                _logger.LogError($"Failed to generate share link: {response.StatusCode}");
+                return StatusCode((int)response.StatusCode, "Failed to generate share link");
+            }
+        }
+        
+        [HttpGet("Redeem/{token}")]
+        public async Task<IActionResult> Redeem(string token)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var jwtToken = Request.Cookies["JWTToken"];
+            
+            if (string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+            
+            httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + jwtToken);
+            
+            var response = await httpClient.GetAsync($"http://simplex-backend-service:8080/api/Editor/RedeemInvitation/{token}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                
+                var responseData = JsonConvert.DeserializeAnonymousType(content, new { message = "", projectId = "" });
+                
+                return Redirect($"http://10.225.149.19:31688/Editor/Edit?projectId={responseData?.projectId}");
+            }
+            else
+            {
+                ViewBag.ErrorMessage = "error failed.";
+                return Json(new { success = false, message = "error failed." });
+            }
+        }
     }
 }
