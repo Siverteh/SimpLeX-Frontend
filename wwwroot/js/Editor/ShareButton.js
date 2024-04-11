@@ -30,5 +30,4 @@ function copyToClipboard() {
     const copyText = document.getElementById("shareLinkInput");
     copyText.select();
     document.execCommand("copy");
-    alert("Link copied to clipboard!");
 }

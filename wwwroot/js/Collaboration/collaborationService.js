@@ -22,6 +22,7 @@ export function initializeCollaboration(workspace, projectId) {
 
     // Enhanced function to handle Blockly workspace changes
     const handleBlocklyChanges = debounce((event) => {
+        console.log('Event Fired:', event.type, 'Block ID:', event.blockId);
         if (shouldAutosave(event, workspace)) {
             const xml = Blockly.Xml.workspaceToDom(workspace);
             const xmlText = Blockly.Xml.domToText(xml);
@@ -36,7 +37,7 @@ export function initializeCollaboration(workspace, projectId) {
 
             sendMessage('blocklyUpdate', xmlText);
         }
-    }, 100);
+    }, 0);
 
 
     // Listen to Blockly workspace changes

@@ -43,7 +43,7 @@ function changeIframeSrc(iframe, src) {
 export function compileLatexContent(workspace) {
     const projectId = document.getElementById('projectId').value;
     const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
-    
+
     var formData = new FormData();
     formData.append('projectId', projectId);
     formData.append('latexCode', latexContent);
@@ -52,8 +52,8 @@ export function compileLatexContent(workspace) {
         method: 'POST',
         body: formData,
         headers: {
-            // CSRF token header; adjust as needed based on how your application expects it
             'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value,
+            'Accept': 'application/json' // Ensure the server responds with JSON
         }
     })
         .then(response => {
@@ -65,16 +65,23 @@ export function compileLatexContent(workspace) {
         })
         .then(data => {
             if (data.success && data.pdfData) {
-                // Convert base64-encoded data to a Blob and display the PDF
+                // Display the PDF if compilation was successful and data was received
                 displayPDF(data.pdfData);
+                console.log(data.wordCount);
+                updateProjectTitle(data.wordCount);
             } else {
                 // Handle the case where compilation was successful but no PDF data was returned
-                alert('Failed to load PDF.');
+                console.error('Failed to load PDF:', data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
         });
+}
+
+function updateProjectTitle(wordCount) {
+    const wordCountElement = document.getElementById('wordCount');
+    wordCountElement.textContent = `WORDS: ${wordCount}`; // Set text content to new word count
 }
 
 export function autoSaveLatexContent(workspace) {

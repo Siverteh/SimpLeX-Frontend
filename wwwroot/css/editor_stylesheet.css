@@ -23,6 +23,17 @@ body {
     padding: 10px;
 }
 
+.center-title {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.additional-info {
+    font-size: 0.75em; /* Smaller font size for word count and collaborators */
+    text-align: center;
+    color: white;
+}
+
 .left-buttons, .right-buttons {
     display: flex;
 }
