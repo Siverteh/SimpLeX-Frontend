@@ -24,34 +24,31 @@ export function initializeBlockly() {
     return workspace;
 }
 
-export function shouldAutosave(event) {
-    // Events that indicate a meaningful change in the workspace content
-    const meaningfulChangeEvents = [
-        Blockly.Events.BLOCK_CREATE,
-        Blockly.Events.BLOCK_CHANGE,
-        Blockly.Events.BLOCK_DELETE,
-        Blockly.Events.BLOCK_MOVE
-    ];
+export function shouldAutosave(event, workspace) {
+    const block = workspace.getBlockById(event.blockId);
+    if (!block) return false; // Early exit if block does not exist (safety check)
 
-    let isMeaningfulEvent = meaningfulChangeEvents.includes(event.type);
+    const rootBlock = block.getRootBlock();
+    const isDocumentStartAffected = rootBlock.type === 'document_start_block';
 
-    // Handle BLOCK_MOVE events to ensure they result in a new connection or disconnection
-    if (event.type === Blockly.Events.BLOCK_MOVE) {
-        isMeaningfulEvent = !!event.newParentId || !!event.oldParentId;
+    switch(event.type) {
+        case Blockly.Events.BLOCK_CREATE:
+        case Blockly.Events.BLOCK_DELETE:
+            // Trigger autosave if the block is connected to the document start block
+            return isDocumentStartAffected;
+        case Blockly.Events.BLOCK_CHANGE:
+            // Always autosave on changes (text changes, dropdowns, etc.)
+            return true;
+        case Blockly.Events.BLOCK_MOVE:
+            // Autosave on moves affecting connection to/from document start block
+            const wasConnected = !!event.oldParentId;
+            const isConnected = !!event.newParentId && isDocumentStartAffected;
+            return wasConnected || isConnected;
+        default:
+            return false;
     }
-
-    // Handle BLOCK_CHANGE events to focus on changes to block fields
-    if (event.type === Blockly.Events.BLOCK_CHANGE && event.element !== 'field') {
-        isMeaningfulEvent = false;
-    }
-
-    // Specifically handle BLOCK_DELETE events to always trigger autosave
-    if (event.type === Blockly.Events.BLOCK_DELETE) {
-        isMeaningfulEvent = true;
-    }
-
-    return isMeaningfulEvent;
 }
+
 
 export function ensureDocumentStartBlockExists(workspace) {
     // Check if a document start block already exists

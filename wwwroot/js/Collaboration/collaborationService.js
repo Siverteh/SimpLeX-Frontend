@@ -3,47 +3,63 @@ import {WebSocketService} from './webSocketService.js';
 import {debounce} from "../Editor/PdfViewerScripts.js";
 
 import {displayMessage} from "../Editor/ChatLogic.js";
+import {shouldAutosave} from "../Editor/BlocklyScripts.js";
+
+import {autoSaveLatexContent, compileLatexContent} from "../Editor/PdfViewerScripts.js";
 
 const wsService = new WebSocketService();
 
-function connectToProject(projectId) {
-    if (projectId) {
-        wsService.connect(projectId);
-    } else {
-        console.error("Project ID is not available.");
+export async function initializeCollaboration(workspace, projectId) {
+    const response = await fetch('/Editor/GetUserInfo');
+    if (!response.ok) {
+        console.error('Failed to fetch user info');
+        return;
     }
-}
-
-export function initializeCollaboration(workspace, projectId) {
-    connectToProject(projectId);
+    const {userId, userName} = await response.json();
+    
+    console.log(userName);
+    
+    wsService.connect(projectId, userName);
 
     // Enhanced function to handle Blockly workspace changes
     const handleBlocklyChanges = debounce((event) => {
-        if ([Blockly.Events.MOVE, Blockly.Events.CREATE, Blockly.Events.DELETE, Blockly.Events.CHANGE].includes(event.type)) {
+        console.log('Event Fired:', event.type, 'Block ID:', event.blockId);
+        if (shouldAutosave(event, workspace)) {
             const xml = Blockly.Xml.workspaceToDom(workspace);
             const xmlText = Blockly.Xml.domToText(xml);
-            console.log("Broadcasting Blockly changes:", xmlText);
-            // Send workspace updates as a direct string, now throttled
-            sendMessage('blocklyUpdate', xmlText);
+            autoSaveLatexContent(workspace);
+            compileLatexContent(workspace);
+            wsService.sendMessage('blocklyUpdateImportant', xmlText);  // Send only meaningful updates
         }
-    }, 500)
+        else if ([Blockly.Events.MOVE, Blockly.Events.CREATE, Blockly.Events.DELETE, Blockly.Events.CHANGE].includes(event.type)) 
+        {
+            const xml = Blockly.Xml.workspaceToDom(workspace);
+            const xmlText = Blockly.Xml.domToText(xml);
+
+            wsService.sendMessage('blocklyUpdate', xmlText);
+        }
+    }, 0);
+
 
     // Listen to Blockly workspace changes
     workspace.addChangeListener(handleBlocklyChanges);
 
     // Handle incoming Blockly updates
-    wsService.onMessage('blocklyUpdate', (data) => {
-        // Temporary remove the listener to prevent sending back the received changes
+    wsService.onMessage('blocklyUpdateImportant', (data) => {
         workspace.removeChangeListener(handleBlocklyChanges);
-        console.log("onMessage blocklyUpdate:", data.toString());
-
-        // Apply the Blockly changes received from other users
         const xml = Blockly.utils.xml.textToDom(data);
         Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
-
-        // Re-apply the listener after changes are made
+        autoSaveLatexContent(workspace);
+        compileLatexContent(workspace);
         workspace.addChangeListener(handleBlocklyChanges);
     });
+    wsService.onMessage('blocklyUpdate', (data) => {
+        workspace.removeChangeListener(handleBlocklyChanges);
+        const xml = Blockly.utils.xml.textToDom(data);
+        Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
+        workspace.addChangeListener(handleBlocklyChanges);
+    });
+    wsService.onMessage('updateCollaborators', updateCollaboratorsDisplay);
 
     // Listen for cursor movement updates
     wsService.onMessage('cursorMove', updateRemoteCursor);
@@ -55,23 +71,13 @@ export function initializeCollaboration(workspace, projectId) {
 }
 
 // sendMessage function adjusted to match backend expectations
-export function sendMessage(action, data) {
-    // Ensuring data is sent as a direct string under 'Data'
-    const message = JSON.stringify({Action: action, Data: data});
-    if (wsService.socket && wsService.isConnected) {
-        wsService.socket.send(message);
-    } else {
-        console.error('WebSocket is not connected.');
-    }
-}
-
 
 // This function updates or displays the cursor for a remote user.
 // Cursor cache to store references to cursor and label elements
 const cursorCache = {};
 
 function updateRemoteCursor(data) {
-    const {userId, userName, x, y, isVisible} = data;
+    const { userId, userName, x, y, isVisible } = data;
 
     // Check if the cursor is already cached
     let cursor = cursorCache[userId]?.cursor;
@@ -91,7 +97,7 @@ function updateRemoteCursor(data) {
         document.body.appendChild(label);
 
         // Add to cache
-        cursorCache[userId] = {cursor, label};
+        cursorCache[userId] = { cursor, label };
     }
 
     // Update cursor and label visibility based on isVisible
@@ -115,7 +121,7 @@ export async function sendLocalCursorPosition(event) {
         console.error('Failed to fetch user info');
         return;
     }
-    const {userId, userName} = await response.json();
+    const { userId, userName } = await response.json();
 
     // Get the bounding rectangles
     const blocklyWorkspaceRect = document.getElementById('blocklyDiv').getBoundingClientRect();
@@ -139,14 +145,27 @@ export async function sendLocalCursorPosition(event) {
         userName,
         isVisible // This flag determines if the cursor should be displayed or not
     };
+    wsService.sendMessage('cursorMove', cursorPosition);
+}
 
-    sendMessage('cursorMove', cursorPosition);
+function updateCollaboratorsDisplay(collaborators) {
+    const collaboratorsCount = document.getElementById("activeCollaborators");
+    const collaboratorList = document.getElementById("collaboratorList");
+
+    collaboratorsCount.textContent = collaborators.length; // Update the number of collaborators
+
+    collaboratorList.innerHTML = ''; // Clear existing list
+    collaborators.forEach(collab => {
+        const li = document.createElement("li");
+        li.textContent = collab.userName; // Assuming 'collab' object has a 'userName' property
+        collaboratorList.appendChild(li);
+    });
 }
 
 
 export function throttle(callback, delay) {
     let lastCall = 0;
-    return function (...args) {
+    return function(...args) {
         const now = new Date().getTime();
         if (now - lastCall < delay) return;
         lastCall = now;

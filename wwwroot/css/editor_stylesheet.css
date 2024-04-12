@@ -23,6 +23,17 @@ body {
     padding: 10px;
 }
 
+.center-title {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.additional-info {
+    font-size: 0.75em; /* Smaller font size for word count and collaborators */
+    text-align: center;
+    color: white;
+}
+
 .left-buttons, .right-buttons {
     display: flex;
 }
@@ -119,7 +130,7 @@ iframe.pdfDisplay {
     position: absolute;
     width: 20px;
     height: 20px;
-    background: url('images/cursor.png') no-repeat center; /* Adjusted path to your cursor icon */
+    background: url('../images/cursor.png') no-repeat center; /* Adjusted path to your cursor icon */
     background-size: contain;
     pointer-events: none; /* Make sure the cursor doesn't interfere with other elements */
 }

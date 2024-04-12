@@ -41,6 +41,7 @@ app.UseStaticFiles(new StaticFileOptions
     })
 });
 
+
 app.UseRouting();
 
 app.UseAuthentication();
