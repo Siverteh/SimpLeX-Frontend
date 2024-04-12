@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -29,26 +31,48 @@ namespace SimpLeX_Frontend.Controllers
             var token = Request.Cookies["JWTToken"];
             if (string.IsNullOrEmpty(token))
             {
-                // Indicate that a redirect is necessary
-                return null;
+                // Log this situation if needed
+                _logger.LogWarning("JWT Token is missing. User is probably not logged in.");
+                return null; // Indicate that a redirect to the login might be necessary
             }
-            
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+    
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    
             var response = await httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 var projectsJson = await response.Content.ReadAsStringAsync();
                 var projects = JsonConvert.DeserializeObject<IEnumerable<ProjectViewModel>>(projectsJson);
-
-                return projects ?? new List<ProjectViewModel>();
+                return projects ?? new List<ProjectViewModel>(); // Safeguard against null
             }
             else
             {
-                // Handle error or return an empty list
+                // Log the specific error
+                _logger.LogError("Failed to fetch projects: {StatusCode}. Reason: {ReasonPhrase}", response.StatusCode, response.ReasonPhrase);
                 return new List<ProjectViewModel>();
             }
         }
+
+        private string GetUserIdJWT(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return null;
+            }
+
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                return userId;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -59,7 +83,10 @@ namespace SimpLeX_Frontend.Controllers
                 // If FetchUserProjectsAsync returned null, redirect to the login page
                 return RedirectToAction("Login", "Auth");
             }
-    
+            
+            var userId = GetUserIdJWT(Request.Cookies["JWTToken"]);
+            ViewData["CurrentUserId"] = userId;
+            
             return View(projects);
         }
         
@@ -253,5 +280,36 @@ namespace SimpLeX_Frontend.Controllers
                 return RedirectToAction("Index", new { errorMessage = "Failed to delete the project." });
             }
         }
+        
+        [HttpPost]
+        public async Task<IActionResult> LeaveProject(string projectId)
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            var leaveProjectUrl = $"http://simplex-backend-service:8080/api/Project/LeaveProject/{projectId}";
+
+            var token = Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                // If no JWT token redirect to login page.
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, leaveProjectUrl);
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            var response = await httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Redirect to the Index action (or wherever you list the projects) to show the updated list
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                // Handle failure, perhaps by showing an error message or logging the error
+                return RedirectToAction("Index", new { errorMessage = "Failed to leave the project." });
+            }
+        }
+
     }
 }

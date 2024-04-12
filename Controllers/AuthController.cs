@@ -53,7 +53,7 @@ namespace SimpLeX_Frontend.Controllers
                     // Here you can choose how to store the token. For demonstration purposes, we'll use an authentication cookie.
                     // Note: It's important to implement a secure way to handle the JWT token. Consider using secure cookies or other secure storage mechanisms.
                     HttpContext.Response.Cookies.Append("JWTToken", authResponse.Token,
-                        new CookieOptions { HttpOnly = true, Secure = true });
+                        new CookieOptions { HttpOnly = true, Secure = false });
 
                     // Redirect to the Home page or dashboard upon successful login
                     return RedirectToAction("Index", "Project");
