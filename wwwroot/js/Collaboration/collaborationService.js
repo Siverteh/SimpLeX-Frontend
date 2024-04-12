@@ -9,16 +9,17 @@ import {autoSaveLatexContent, compileLatexContent} from "../Editor/PdfViewerScri
 
 const wsService = new WebSocketService();
 
-function connectToProject(projectId) {
-    if (projectId) {
-        wsService.connect(projectId);
-    } else {
-        console.error("Project ID is not available.");
+export async function initializeCollaboration(workspace, projectId) {
+    const response = await fetch('/Editor/GetUserInfo');
+    if (!response.ok) {
+        console.error('Failed to fetch user info');
+        return;
     }
-}
-
-export function initializeCollaboration(workspace, projectId) {
-    connectToProject(projectId);
+    const {userId, userName} = await response.json();
+    
+    console.log(userName);
+    
+    wsService.connect(projectId, userName);
 
     // Enhanced function to handle Blockly workspace changes
     const handleBlocklyChanges = debounce((event) => {
@@ -28,14 +29,14 @@ export function initializeCollaboration(workspace, projectId) {
             const xmlText = Blockly.Xml.domToText(xml);
             autoSaveLatexContent(workspace);
             compileLatexContent(workspace);
-            sendMessage('blocklyUpdateImportant', xmlText);  // Send only meaningful updates
+            wsService.sendMessage('blocklyUpdateImportant', xmlText);  // Send only meaningful updates
         }
         else if ([Blockly.Events.MOVE, Blockly.Events.CREATE, Blockly.Events.DELETE, Blockly.Events.CHANGE].includes(event.type)) 
         {
             const xml = Blockly.Xml.workspaceToDom(workspace);
             const xmlText = Blockly.Xml.domToText(xml);
 
-            sendMessage('blocklyUpdate', xmlText);
+            wsService.sendMessage('blocklyUpdate', xmlText);
         }
     }, 0);
 
@@ -58,22 +59,13 @@ export function initializeCollaboration(workspace, projectId) {
         Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, workspace);
         workspace.addChangeListener(handleBlocklyChanges);
     });
+    wsService.onMessage('updateCollaborators', updateCollaboratorsDisplay);
 
     // Listen for cursor movement updates
     wsService.onMessage('cursorMove', updateRemoteCursor);
 }
 
 // sendMessage function adjusted to match backend expectations
-export function sendMessage(action, data) {
-    // Ensuring data is sent as a direct string under 'Data'
-    const message = JSON.stringify({ Action: action, Data: data });
-    if (wsService.socket && wsService.isConnected) {
-        wsService.socket.send(message);
-    } else {
-        console.error('WebSocket is not connected.');
-    }
-}
-
 
 // This function updates or displays the cursor for a remote user.
 // Cursor cache to store references to cursor and label elements
@@ -148,7 +140,21 @@ export async function sendLocalCursorPosition(event) {
         userName,
         isVisible // This flag determines if the cursor should be displayed or not
     };
-    sendMessage('cursorMove', cursorPosition);
+    wsService.sendMessage('cursorMove', cursorPosition);
+}
+
+function updateCollaboratorsDisplay(collaborators) {
+    const collaboratorsCount = document.getElementById("activeCollaborators");
+    const collaboratorList = document.getElementById("collaboratorList");
+
+    collaboratorsCount.textContent = collaborators.length; // Update the number of collaborators
+
+    collaboratorList.innerHTML = ''; // Clear existing list
+    collaborators.forEach(collab => {
+        const li = document.createElement("li");
+        li.textContent = collab.userName; // Assuming 'collab' object has a 'userName' property
+        collaboratorList.appendChild(li);
+    });
 }
 
 
