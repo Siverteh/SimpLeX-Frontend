@@ -65,11 +65,14 @@ namespace SimpLeX_Frontend.Controllers
         public async Task<IActionResult> Compile(ProjectViewModel model)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var compileRequest = 
-                new { ProjectId = model.ProjectId, LatexCode = model.LatexCode, WorkspaceState = "" };
-            
-            var token = Request.Cookies["JWTToken"];
+            var compileRequest = new 
+            {
+                ProjectId = model.ProjectId,
+                LatexCode = model.LatexCode,
+                WorkspaceState = "" // Assuming workspace state is not needed for compilation
+            };
 
+            var token = Request.Cookies["JWTToken"];
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToAction("Login", "Auth");
@@ -79,23 +82,26 @@ namespace SimpLeX_Frontend.Controllers
             {
                 Content = new StringContent(JsonConvert.SerializeObject(compileRequest), Encoding.UTF8, "application/json")
             };
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
             var response = await httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
                 var pdfBytes = await response.Content.ReadAsByteArrayAsync();
                 var pdfBase64 = Convert.ToBase64String(pdfBytes);
-                
+                var wordCount = response.Headers.Contains("X-Word-Count") ? response.Headers.GetValues("X-Word-Count").FirstOrDefault() : "0";
+
                 ViewBag.PdfData = pdfBase64;
-                return Json(new { success = true, pdfData = pdfBase64 });
+                return Json(new { success = true, pdfData = pdfBase64, wordCount = wordCount });
             }
             else
             {
+                var errorContent = await response.Content.ReadAsStringAsync();
                 ViewBag.ErrorMessage = "Failed to compile document.";
-                return Json(new { success = false, message = "Failed to compile document." });
+                return Json(new { success = false, message = "Failed to compile document.", errorMessage = errorContent });
             }
         }
+
 
         
         [HttpPost]

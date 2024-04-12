@@ -73,7 +73,6 @@
         </div>
     </div>
     
-    <!-- Copy Project Modal -->
     
     <div id="deleteConfirmationModal" class="modal">
         <div class="modal-content">
@@ -84,6 +83,16 @@
             <button class="cancel-btn" onclick="document.getElementById('deleteConfirmationModal').style.display='none'">Cancel</button>
         </div>
     </div>
+    
+    <div id="leaveConfirmationModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Are you sure you want to leave this project?</h3>
+                <p id="leaveProjectName"></p>
+                <button id="confirmLeaveBtn" class="delete-btn">Delete</button>
+                <button class="cancel-btn" onclick="document.getElementById('leaveConfirmationModal').style.display='none'">Cancel</button>
+            </div>
+        </div>
     
     <h2>All Projects</h2>
     
@@ -97,6 +106,7 @@
         </tr>
         </thead>
         <tbody>
+        
         @foreach(var project in Model.OrderByDescending(p => p.LastModifiedDate))
         {
             <tr>
@@ -106,24 +116,30 @@
                 <td class="other-column">@project.Owner</td>
                 <td class="other-column">@project.LastModifiedDate.ToString("g")</td>
                 <td class="actions-column">
-                    <!-- Copy Icon -->
+                    <!-- Actions like Copy, Export PDF/TeX -->
                     <button type="button" class="icon" data-hover-text="Copy Project" onclick="openCopyModal('@project.Title', '@project.ProjectId')">
                         <i class="fas fa-copy"></i>
                     </button>
-                    <!-- PDF Icon -->
                     <button type="button" class="icon" data-hover-text="Export as PDF" onclick="location.href='@Url.Action("ExportAsPDF", "Project", new { projectId = project.ProjectId })'">
                         <i class="fas fa-file-pdf"></i>
                     </button>
-                    <!-- LaTeX Icon -->
-                    <!-- Update the onclick attribute to call the new ExportAsTeX action method -->
                     <button type="button" class="icon" data-hover-text="Export as TeX" onclick="location.href='@Url.Action("ExportAsTeX", "Project", new { projectId = project.ProjectId })'">
                         <i class="fas fa-file-code"></i>
                     </button>
-
-                    <!-- Delete Icon -->
-                    <button type="button" class="icon delete-icon" data-hover-text="Delete Project" data-project-id="@project.ProjectId" data-project-name="@project.Title" onclick="confirmDelete('@project.ProjectId', '@project.Title')">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+        
+                    <!-- Conditional Display for Leave/Delete based on whether the current user is the owner -->
+                    @if (project.UserId == ViewData["CurrentUserId"].ToString())
+                    {
+                        <button type="button" class="icon delete-icon" data-hover-text="Delete Project" data-project-id="@project.ProjectId" data-project-name="@project.Title" onclick="confirmDelete('@project.ProjectId', '@project.Title')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="icon leave-icon" data-hover-text="Leave Project" data-project-id="@project.ProjectId" onclick="leaveProject('@project.ProjectId', '@project.Title')">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    }
                 </td>
             </tr>
         }
