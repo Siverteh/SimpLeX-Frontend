@@ -153,3 +153,41 @@ iframe.pdfDisplay {
 }
 
 
+.chat-window {
+    border-left: 2px solid #ddd;
+    background-color: #2F3A4C;
+}
+
+.chat-header {
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    text-align: right;
+}
+
+.chat-content {
+    padding: 10px;
+    height: calc(100% - 120px);
+    overflow-y: scroll;
+}
+
+.chat-input {
+    position: absolute;
+    bottom: 0;
+    width: calc(100% - 20px);
+    padding: 10px;
+    background: white;
+}
+
+.chat-input input {
+    width: 70%;
+    padding: 5px 10px;
+    margin-right: 5px;
+}
+
+
+.chat-input button {
+    padding: 5px 10px;
+}
+
+

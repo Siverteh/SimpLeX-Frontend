@@ -1,13 +1,11 @@
-
-import { WebSocketService } from './webSocketService.js';
-
 import {debounce} from "../Editor/PdfViewerScripts.js";
 
+import {displayMessage} from "../Editor/ChatLogic.js";
 import {shouldAutosave} from "../Editor/BlocklyScripts.js";
 
 import {autoSaveLatexContent, compileLatexContent} from "../Editor/PdfViewerScripts.js";
 
-const wsService = new WebSocketService();
+import {wsService} from "./webSocketService.js";
 
 export async function initializeCollaboration(workspace, projectId) {
     const response = await fetch('/Editor/GetUserInfo');
@@ -19,7 +17,7 @@ export async function initializeCollaboration(workspace, projectId) {
     
     console.log(userName);
     
-    wsService.connect(projectId, userName);
+    await wsService.connect(projectId, userName);
 
     // Enhanced function to handle Blockly workspace changes
     const handleBlocklyChanges = debounce((event) => {
@@ -63,6 +61,11 @@ export async function initializeCollaboration(workspace, projectId) {
 
     // Listen for cursor movement updates
     wsService.onMessage('cursorMove', updateRemoteCursor);
+
+    //listen for new chat messages
+    wsService.onMessage('newChat', (data) => {
+        displayMessage(data);
+    });
 }
 
 // sendMessage function adjusted to match backend expectations
@@ -116,7 +119,7 @@ export async function sendLocalCursorPosition(event) {
         console.error('Failed to fetch user info');
         return;
     }
-    const {userId, userName} = await response.json();
+    const { userId, userName } = await response.json();
 
     // Get the bounding rectangles
     const blocklyWorkspaceRect = document.getElementById('blocklyDiv').getBoundingClientRect();
