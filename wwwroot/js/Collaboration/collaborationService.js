@@ -1,5 +1,3 @@
-import {WebSocketService} from './webSocketService.js';
-
 import {debounce} from "../Editor/PdfViewerScripts.js";
 
 import {displayMessage} from "../Editor/ChatLogic.js";
@@ -7,7 +5,7 @@ import {shouldAutosave} from "../Editor/BlocklyScripts.js";
 
 import {autoSaveLatexContent, compileLatexContent} from "../Editor/PdfViewerScripts.js";
 
-const wsService = new WebSocketService();
+import {wsService} from "./webSocketService.js";
 
 export async function initializeCollaboration(workspace, projectId) {
     const response = await fetch('/Editor/GetUserInfo');
@@ -19,7 +17,7 @@ export async function initializeCollaboration(workspace, projectId) {
     
     console.log(userName);
     
-    wsService.connect(projectId, userName);
+    await wsService.connect(projectId, userName);
 
     // Enhanced function to handle Blockly workspace changes
     const handleBlocklyChanges = debounce((event) => {

@@ -1,4 +1,4 @@
-import {sendMessage} from "../Collaboration/collaborationService.js";
+import {wsService} from "../Collaboration/webSocketService.js";
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -58,7 +58,7 @@ async function sendChat() {
                     content: chatContent,
                     timestamp: new Date().toLocaleDateString()
                 };
-                sendMessage('newChat', chat);
+                wsService.sendMessage('newChat', chat);
                 await displayMessage(chat);
             } else {
                 console.error('Failed to send message.')
