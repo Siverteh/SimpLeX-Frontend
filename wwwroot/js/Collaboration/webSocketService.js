@@ -8,7 +8,7 @@ export class WebSocketService {
 
     connect(projectId) {
         // Update this URL to match the direct access URL of your backend
-        const url = `ws://10.225.149.19:31958/ws/${projectId}`;
+        const url = `ws://127.0.0.1:59924/ws/${projectId}`;
         this.socket = new WebSocket(url);
 
         this.socket.onopen = () => {

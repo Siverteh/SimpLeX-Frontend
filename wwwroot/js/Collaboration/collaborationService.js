@@ -1,8 +1,8 @@
-
-import { WebSocketService } from './webSocketService.js';
+import {WebSocketService} from './webSocketService.js';
 
 import {debounce} from "../Editor/PdfViewerScripts.js";
 
+import {displayMessage} from "../Editor/ChatLogic.js";
 
 const wsService = new WebSocketService();
 
@@ -47,12 +47,17 @@ export function initializeCollaboration(workspace, projectId) {
 
     // Listen for cursor movement updates
     wsService.onMessage('cursorMove', updateRemoteCursor);
+
+    //listen for new chat messages
+    wsService.onMessage('newChat', (data) => {
+        displayMessage(data);
+    });
 }
 
 // sendMessage function adjusted to match backend expectations
 export function sendMessage(action, data) {
     // Ensuring data is sent as a direct string under 'Data'
-    const message = JSON.stringify({ Action: action, Data: data });
+    const message = JSON.stringify({Action: action, Data: data});
     if (wsService.socket && wsService.isConnected) {
         wsService.socket.send(message);
     } else {
@@ -66,7 +71,7 @@ export function sendMessage(action, data) {
 const cursorCache = {};
 
 function updateRemoteCursor(data) {
-    const { userId, userName, x, y, isVisible } = data;
+    const {userId, userName, x, y, isVisible} = data;
 
     // Check if the cursor is already cached
     let cursor = cursorCache[userId]?.cursor;
@@ -86,7 +91,7 @@ function updateRemoteCursor(data) {
         document.body.appendChild(label);
 
         // Add to cache
-        cursorCache[userId] = { cursor, label };
+        cursorCache[userId] = {cursor, label};
     }
 
     // Update cursor and label visibility based on isVisible
@@ -110,7 +115,7 @@ export async function sendLocalCursorPosition(event) {
         console.error('Failed to fetch user info');
         return;
     }
-    const { userId, userName } = await response.json();
+    const {userId, userName} = await response.json();
 
     // Get the bounding rectangles
     const blocklyWorkspaceRect = document.getElementById('blocklyDiv').getBoundingClientRect();
@@ -141,7 +146,7 @@ export async function sendLocalCursorPosition(event) {
 
 export function throttle(callback, delay) {
     let lastCall = 0;
-    return function(...args) {
+    return function (...args) {
         const now = new Date().getTime();
         if (now - lastCall < delay) return;
         lastCall = now;
