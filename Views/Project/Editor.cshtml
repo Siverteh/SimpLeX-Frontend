@@ -14,19 +14,21 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="~/css/editor_stylesheet.css">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 <div class="editor-header">
     <div class="left-buttons">
         <button class="menu-btn">Menu</button>
         <button class="home-btn" onclick="location.href='@Url.Action("GoHome", "Editor")'">Home</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#imageGalleryModal">Image Gallery</button>
     </div>
     <div class="center-title">
         <h1 class="project-title">@ViewData["Title"]</h1>
         <div class="additional-info">
-            <span id="wordCount" class="word-count">WORDS: 0</span> <!-- Smaller word count -->
+            <span id="wordCount" class="word-count">WORDS: 0</span>
             <span class="collaborators-count" onclick="toggleCollaboratorsModal();">
-                👁️ <span id="activeCollaborators">0</span>
+                <i class="fas fa-users"></i> <span id="activeCollaborators">0</span>
             </span>
         </div>
     </div>
@@ -37,9 +39,44 @@
 </div>
 
 
-
 <div class="editor-container">
     
+    <div class="modal fade" id="imageGalleryModal" tabindex="-1" role="dialog" aria-labelledby="imageGalleryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageGalleryModalLabel">Image Gallery</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
+                    <button id="uploadImageButton" class="btn btn-secondary mb-2">Upload Image</button>
+                    <div id="imageGallery" class="d-flex flex-wrap">
+                        <!-- Images will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="collaboratorsModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Active Collaborators</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <ul id="collaboratorList"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <!-- Share Link Modal -->
     <div class="modal fade" id="shareLinkModal" tabindex="-1" aria-labelledby="shareLinkModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -61,23 +98,7 @@
             </div>
         </div>
     </div>
-    
-    <div class="modal fade" id="collaboratorsModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Active Collaborators</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <ul id="collaboratorList"></ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+
     @Html.AntiForgeryToken()
     <input type="hidden" id="projectId" name="projectId" value="@Model.ProjectId"/>
     <div id='projectData' data-latexcode='@Model.LatexCode' data-workspacestate='@Html.Raw(Model.WorkspaceState)' style='display: none;'></div>
@@ -93,7 +114,6 @@
             <block type="add_bibliography"></block>
         </category>
         <category name="Document Structure" colour="230">
-
             <block type="chapter"></block>
             <block type="section"></block>
             <block type="subsection"></block>
@@ -103,6 +123,11 @@
         <category name="Text" colour="160">
             <block type="text_input_block"></block>
             <block type="rich_text"></block>
+            <block type="latex_href"></block>
+        </category>
+        <category name="Images" colour="40">
+            <block type="latex_figure_paste"></block>
+            <block type="latex_figure_upload"></block>
         </category>
         <category name="Lists" colour="260">
             <block type="latex_item"></block>
@@ -117,7 +142,7 @@
         <!-- Display PDF if available -->
         <iframe class="pdfDisplay" id="pdfDisplay" style="width:100%;height:100%;" frameborder="0"></iframe>
     </div>
-    
+
     <!-- Chat Window Container -->
     <div id="chat-window" class="chat-window" style="display:none;">
         <div class="chat-content">
@@ -129,23 +154,31 @@
     </div>
 </div>
 
+<!-- Modals -->
 <script>
 function toggleCollaboratorsModal() {
     $('#collaboratorsModal').modal('toggle'); // Using jQuery for modal toggle
 }
 </script>
 
-<!-- Optional JavaScript -->
-<!-- Blockly JavaScript -->
-<!-- Include Quill library -->
-<script src="/js/Editor/ShareButton.js"></script>
-<script type="module" src="/js/Editor/EditorMain.js"></script>
-
+<!-- Libraries -->
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script src="https://unpkg.com/blockly/blockly.min.js"></script>
-<script src="/js/Blockly/latex_blocks.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Editor logic -->
+<script src="/js/Editor/ShareButton.js"></script>
+<script type="module" src="/js/Editor/EditorMain.js"></script>
 <script type="module" src="/js/Editor/ChatLogic.js"></script>
+<script src="/js/Editor/ImageScripts.js"></script>
+
+<!-- Blockly blocks -->
+<script src="/js/Blockly/ConfigurationBlocks.js"></script>
+<script src="/js/Blockly/StructureBlocks.js"></script>
+<script src="/js/Blockly/TextBlocks.js"></script>
+<script src="/js/Blockly/ListBlocks.js"></script>
+<script src="/js/Blockly/ImageBlocks.js"></script>
+
 </body>
 </html>
