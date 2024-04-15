@@ -101,8 +101,6 @@ namespace SimpLeX_Frontend.Controllers
                 return Json(new { success = false, message = "Failed to compile document.", errorMessage = errorContent });
             }
         }
-
-
         
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -233,6 +231,40 @@ namespace SimpLeX_Frontend.Controllers
             {
                 ViewBag.ErrorMessage = "error failed.";
                 return Json(new { success = false, message = "error failed." });
+            }
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadImage([FromBody] ImageUploadViewModel model)
+        {
+            
+            if (model == null || string.IsNullOrWhiteSpace(model.Image) || string.IsNullOrWhiteSpace(model.ProjectId)) {
+                return BadRequest("Invalid image data or project ID.");
+            }
+
+            var httpClient = _httpClientFactory.CreateClient();
+            var token = Request.Cookies["JWTToken"];
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("Token is not supplied.");
+            }
+
+            var requestContent = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var backendServiceUrl = "http://simplex-backend-service:8080/api/Images/uploadImage";
+            var response = await httpClient.PostAsync(backendServiceUrl, requestContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadAsStringAsync();
+                return Content(responseData, "application/json");
+            }
+            else
+            {
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
     }
