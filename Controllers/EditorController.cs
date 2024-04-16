@@ -265,7 +265,7 @@ namespace SimpLeX_Frontend.Controllers
             formData.Add(new StringContent(projectId), "projectId");
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Images/uploadImage", formData);
+            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Images/UploadImage", formData);
 
             if (response.IsSuccessStatusCode)
             {

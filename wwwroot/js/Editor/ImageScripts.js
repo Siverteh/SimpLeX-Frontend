@@ -43,6 +43,7 @@ document.getElementById('imageUploadInput').addEventListener('change', function(
 
 
 function addImageToGallery(url) {
+    console.log("the url is:", url);
     const imgElement = document.createElement('img');
     imgElement.src = url;
     imgElement.alt = 'Uploaded Image';
