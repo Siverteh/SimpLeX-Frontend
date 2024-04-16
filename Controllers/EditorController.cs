@@ -234,28 +234,38 @@ namespace SimpLeX_Frontend.Controllers
             }
         }
         
+        // Adjusted to handle IFormFile directly instead of base64 strings.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadImage([FromBody] ImageUploadViewModel model)
+        public async Task<IActionResult> UploadImage()
         {
-            
-            if (model == null || string.IsNullOrWhiteSpace(model.Image) || string.IsNullOrWhiteSpace(model.ProjectId)) {
-                return BadRequest("Invalid image data or project ID.");
+            var file = Request.Form.Files[0];
+            var projectId = Request.Form["projectId"].ToString();
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file selected");
+            }
+            if (string.IsNullOrWhiteSpace(projectId))
+            {
+                return BadRequest("Project ID is required.");
             }
 
-            var httpClient = _httpClientFactory.CreateClient();
+            var httpClient = _httpClientFactory.CreateClient("BackendService"); // Ensure this client is correctly configured
             var token = Request.Cookies["JWTToken"];
-
             if (string.IsNullOrEmpty(token))
             {
                 return Unauthorized("Token is not supplied.");
             }
 
-            var requestContent = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            using var formData = new MultipartFormDataContent();
+            using var fileContent = new StreamContent(file.OpenReadStream());
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);  // Dynamically assign the correct content type
 
-            var backendServiceUrl = "http://simplex-backend-service:8080/api/Images/uploadImage";
-            var response = await httpClient.PostAsync(backendServiceUrl, requestContent);
+            formData.Add(fileContent, "file", file.FileName);
+            formData.Add(new StringContent(projectId), "projectId");
+
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Images/uploadImage", formData);
 
             if (response.IsSuccessStatusCode)
             {
@@ -267,5 +277,7 @@ namespace SimpLeX_Frontend.Controllers
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
+
+
     }
 }
