@@ -56,7 +56,8 @@ async function sendChat() {
                 const chat = {
                     userName: currentUser.userName,
                     content: chatContent,
-                    timestamp: new Date().toLocaleDateString()
+                    timestamp: new Date().toISOString(),
+                    userId: currentUser.userId,
                 };
                 wsService.sendMessage('newChat', chat);
                 await displayMessage(chat);
