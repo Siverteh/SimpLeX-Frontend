@@ -52,15 +52,15 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div id="imageGallery" class="d-flex flex-wrap justify-content-start"></div>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
                     <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
-                    <button id="uploadImageButton" class="btn btn-secondary mb-2">Upload Image</button>
-                    <div id="loadingIndicator" style="display: none;">Uploading...</div>
-                    <div id="imageGallery" class="d-flex flex-wrap"></div>
+                    <button id="uploadImageButton" class="btn btn-primary">Upload Image</button>
                 </div>
             </div>
         </div>
     </div>
-
     
     <div class="modal fade" id="collaboratorsModal" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
@@ -127,7 +127,9 @@
             <block type="latex_href"></block>
         </category>
         <category name="Images" colour="40">
-            <block type="latex_figure"></block>
+            <block type="latex_standard_image"></block>
+            <block type="latex_simple_image"></block>
+            <block type="latex_detailed_image"></block>
         </category>
         <category name="Lists" colour="260">
             <block type="latex_item"></block>

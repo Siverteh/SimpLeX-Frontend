@@ -31,7 +31,9 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage{amssymb}",
         "\\usepackage{graphicx}",
         "\\usepackage[a4paper, margin=2cm]{geometry}",
-        "\\usepackage[bookmarks=false,hidelinks]{hyperref}"
+        "\\usepackage[bookmarks=false,hidelinks]{hyperref}",
+        "\\usepackage{float}",
+        "\\usepackage{subcaption}"
     ].join('\n');
 
     // Generate code for blocks placed within the "CONFIG" input
