@@ -101,8 +101,6 @@ namespace SimpLeX_Frontend.Controllers
                 return Json(new { success = false, message = "Failed to compile document.", errorMessage = errorContent });
             }
         }
-
-
         
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -235,5 +233,51 @@ namespace SimpLeX_Frontend.Controllers
                 return Json(new { success = false, message = "error failed." });
             }
         }
+        
+        // Adjusted to handle IFormFile directly instead of base64 strings.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadImage()
+        {
+            var file = Request.Form.Files[0];
+            var projectId = Request.Form["projectId"].ToString();
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file selected");
+            }
+            if (string.IsNullOrWhiteSpace(projectId))
+            {
+                return BadRequest("Project ID is required.");
+            }
+
+            var httpClient = _httpClientFactory.CreateClient("BackendService"); // Ensure this client is correctly configured
+            var token = Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("Token is not supplied.");
+            }
+
+            using var formData = new MultipartFormDataContent();
+            using var fileContent = new StreamContent(file.OpenReadStream());
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);  // Dynamically assign the correct content type
+
+            formData.Add(fileContent, "file", file.FileName);
+            formData.Add(new StringContent(projectId), "projectId");
+
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Images/UploadImage", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadAsStringAsync();
+                return Content(responseData, "application/json");
+            }
+            else
+            {
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
+        }
+
+
     }
 }
