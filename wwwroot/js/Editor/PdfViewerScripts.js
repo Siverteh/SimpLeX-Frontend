@@ -42,7 +42,7 @@ function changeIframeSrc(iframe, src) {
 
 export function compileLatexContent(workspace) {
     const projectId = document.getElementById('projectId').value;
-    const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
+    const latexContent = compileConnectedBlocks(workspace) + '\\newpage\n\\printbibliography\n\\end{document}';
 
     var formData = new FormData();
     formData.append('projectId', projectId);
@@ -86,7 +86,7 @@ function updateProjectTitle(wordCount) {
 
 export function autoSaveLatexContent(workspace) {
     const projectId = document.getElementById('projectId').value;
-    const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
+    const latexContent = compileConnectedBlocks(workspace) + '\\newpage\n\\printbibliography\n\\end{document}';
     const workspaceState = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
     
     var formData = new FormData();

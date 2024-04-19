@@ -1,3 +1,5 @@
+import {globalCitations} from "../Editor/CitationScripts.js";
+
 Blockly.Blocks['document_start_block'] = {
     init: function() {
         this.appendDummyInput()
@@ -33,25 +35,23 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage[a4paper, margin=2cm]{geometry}",
         "\\usepackage[bookmarks=false,hidelinks]{hyperref}",
         "\\usepackage{float}",
-        "\\usepackage{subcaption}"
+        "\\usepackage{subcaption}",
+        "\\usepackage[backend=biber]{biblatex}"
     ].join('\n');
 
-    // Generate code for blocks placed within the "CONFIG" input
     var configCode = Blockly.JavaScript.statementToCode(block, 'CONFIG').trim();
+    var classOptions = 'a4paper, twoside, 12pt';  // default class options
+    var docType = 'article';  // default document type
 
-    // Extract document class and other configurations
-    var docType = 'article'; // Default to article
-    var classOptions = 'a4paper, twoside, 12pt'; // Default class options
-    if(configCode) {
+    if (configCode) {
         var matches = configCode.match(/\[(.*?)\]/);
-        if(matches) {
-            docType = matches[1].split(',')[0].trim(); // Extract document type from configuration
-            classOptions = matches[1]; // Use the entire configuration string
+        if (matches) {
+            classOptions = matches[1];
+            docType = matches[1].split(',')[0].trim();
         }
     }
 
-    var code = `\\documentclass[${classOptions}]{${docType}}\n${packages}\n\\begin{document}\n\\pagenumbering{roman}\n${configCode.replace(/\[.*?\]/, '')}\n\\pagenumbering{arabic}\\leavevmode\n`;
-    return code;
+    return `\\documentclass[${classOptions}]{${docType}}\n${packages}\n${globalCitations}\n\\begin{document}\n${configCode.replace(/\[.*?\]/, '')}\n\\pagenumbering{arabic}\\leavevmode\n`;
 };
 
 
@@ -188,29 +188,4 @@ Blockly.Blocks['list_of_tables'] = {
 Blockly.JavaScript['list_of_tables'] = function(block) {
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     return '\\listoftables\n' + clearPage;
-};
-
-// Add Bibliography Block with clear page option
-Blockly.Blocks['add_bibliography'] = {
-    init: function() {
-        this.appendDummyInput()
-            .setAlign(Blockly.ALIGN_CENTRE)
-            .appendField("Bibliography")
-        this.appendDummyInput()
-            .setAlign(Blockly.ALIGN_CENTRE)
-            .appendField("Clear page")
-            .appendField(new Blockly.FieldCheckbox("TRUE"), "CLEAR_PAGE")
-            .appendField(new Blockly.FieldTextInput("references"), "BIB_FILE");
-        this.setPreviousStatement(true, "ConfigBlocks");
-        this.setNextStatement(true, "ConfigBlocks");
-        this.setColour(60);
-        this.setTooltip("Adds a bibliography section.");
-        this.setHelpUrl("");
-    }
-};
-
-Blockly.JavaScript['add_bibliography'] = function(block) {
-    var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
-    var bibFile = block.getFieldValue('BIB_FILE');
-    return `\\bibliography{${bibFile}}\n\\bibliographystyle{plain}\n`;
 };

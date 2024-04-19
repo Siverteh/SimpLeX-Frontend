@@ -1,32 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SimpLeX_Frontend.Models;
+using System;
 
 namespace SimpLeX_Frontend.Controllers
 {
-    public class ImagesController : Controller
+    public class CitationsController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IMemoryCache _cache;
-        private readonly ILogger<EditorController> _logger;
+        private readonly ILogger<CitationsController> _logger;
 
-        public ImagesController(IHttpClientFactory httpClientFactory, IMemoryCache cache, ILogger<EditorController> logger)
+        public CitationsController(IHttpClientFactory httpClientFactory, ILogger<CitationsController> logger)
         {
             _httpClientFactory = httpClientFactory;
-            _cache = cache;
             _logger = logger;
         }
-        
+
         [HttpGet]
-        public async Task<IActionResult> GetProjectImages(string projectId)
+        public async Task<IActionResult> GetCitations(string projectId)
         {
             if (string.IsNullOrWhiteSpace(projectId))
             {
@@ -41,7 +35,7 @@ namespace SimpLeX_Frontend.Controllers
             }
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.GetAsync($"http://simplex-backend-service:8080/api/Images/GetImages?projectId={projectId}");
+            var response = await httpClient.GetAsync($"http://simplex-backend-service:8080/api/Citations/GetCitations?projectId={projectId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -54,55 +48,50 @@ namespace SimpLeX_Frontend.Controllers
             }
         }
 
-        
-        // Adjusted to handle IFormFile directly instead of base64 strings.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadImage()
+        public async Task<IActionResult> AddCitation([FromBody] CitationViewModel citation)
         {
-            var file = Request.Form.Files[0];
-            var projectId = Request.Form["projectId"].ToString();
-            if (file == null || file.Length == 0)
+            _logger.LogInformation($"Received citation to add: {JsonConvert.SerializeObject(citation)}");
+
+            if (citation == null || string.IsNullOrWhiteSpace(citation.ProjectId))
             {
-                return BadRequest("No file selected");
-            }
-            if (string.IsNullOrWhiteSpace(projectId))
-            {
-                return BadRequest("Project ID is required.");
+                return BadRequest("Citation details are required.");
             }
 
-            var httpClient = _httpClientFactory.CreateClient("BackendService"); // Ensure this client is correctly configured
+            var httpClient = _httpClientFactory.CreateClient("BackendService");
             var token = Request.Cookies["JWTToken"];
             if (string.IsNullOrEmpty(token))
             {
                 return Unauthorized("Token is not supplied.");
             }
 
-            using var formData = new MultipartFormDataContent();
-            using var fileContent = new StreamContent(file.OpenReadStream());
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);  // Dynamically assign the correct content type
-
-            formData.Add(fileContent, "file", file.FileName);
-            formData.Add(new StringContent(projectId), "projectId");
-
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Images/UploadImage", formData);
+            var content = new StringContent(JsonConvert.SerializeObject(citation), System.Text.Encoding.UTF8, "application/json");
+
+            _logger.LogInformation($"Forwarding citation to backend: {content.ReadAsStringAsync().Result}");
+            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Citations/AddCitation", content);
 
             if (response.IsSuccessStatusCode)
             {
                 var responseData = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation($"Backend response: {responseData}");
                 return Content(responseData, "application/json");
             }
             else
             {
-                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+                var errorResponse = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"Backend error response: {errorResponse}");
+                return StatusCode((int)response.StatusCode, errorResponse);
             }
         }
 
+
         [HttpDelete]
-        public async Task<IActionResult> DeleteImage(string imagePath)
+        public async Task<IActionResult> DeleteCitation(string citationId)
         {
-            if (string.IsNullOrWhiteSpace(imagePath))
+            if (string.IsNullOrWhiteSpace(citationId))
             {
                 return BadRequest("Image path is required.");
             }
@@ -115,7 +104,7 @@ namespace SimpLeX_Frontend.Controllers
             }
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.DeleteAsync($"http://simplex-backend-service:8080/api/Images/DeleteImage?imagePath={Uri.EscapeDataString(imagePath)}");
+            var response = await httpClient.DeleteAsync($"http://simplex-backend-service:8080/api/Citations/DeleteCitation?citationId={Uri.EscapeDataString(citationId)}");
 
             if (response.IsSuccessStatusCode)
             {
