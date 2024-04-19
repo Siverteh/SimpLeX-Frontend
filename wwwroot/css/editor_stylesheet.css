@@ -195,6 +195,17 @@ iframe.pdfDisplay {
 }
 
 
+#imageGalleryModal .modal-content {
+    height: auto; /* Auto height based on content */
+    max-height: 80vh; /* 80% of the viewport height */
+    overflow: hidden; /* Hide overflow */
+    overflow-y: auto;
+}
+
+#imageGalleryModal .modal-body {
+    padding: 15px; /* Reduced padding might help */
+}
+
 #imageGallery img {
     width: 100px;
     height: 100px;
@@ -233,6 +244,53 @@ iframe.pdfDisplay {
     border-radius: 4px;
 }
 
+
+
+#citationGalleryModal .modal-content {
+    height: auto; /* Auto height based on content */
+    max-height: 80vh; /* 80% of the viewport height */
+    overflow: hidden; /* Hide overflow */
+    overflow-y: auto;
+}
+
+#citationGalleryModal .modal-body {
+    padding: 15px; /* Reduced padding might help */
+}
+
+
+.citation-entry {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.citation-entry:hover {
+    background-color: #f0f0f0;
+}
+
+.delete-btn {
+    padding: 0 5px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    color: red;
+    font-weight: bold;
+}
+
+.citation-entry {
+    padding: 10px;
+    margin-top: 5px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+}
+
+#modal-footer, #citationFormContainer{
+    display: flex;        /* Make the container a flex container */
+    justify-content: center; /* Horizontally center the content (including buttons) */
+    align-items: center;  /* Vertically center the content if needed */
+}
 
 
 

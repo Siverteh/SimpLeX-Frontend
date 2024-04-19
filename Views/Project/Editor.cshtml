@@ -23,6 +23,7 @@
         <button class="menu-btn">Menu</button>
         <button class="home-btn" onclick="location.href='@Url.Action("GoHome", "Editor")'">Home</button>
         <button class="btn btn-primary" data-toggle="modal" data-target="#imageGalleryModal">Image Gallery</button>
+        <button class="btn btn-secondary" data-toggle="modal" data-target="#citationGalleryModal">Citations</button>
     </div>
     <div class="center-title">
         <h1 class="project-title">@ViewData["Title"]</h1>
@@ -41,7 +42,7 @@
 
 
 <div class="editor-container">
-    
+
     <div class="modal fade" id="imageGalleryModal" tabindex="-1" role="dialog" aria-labelledby="imageGalleryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -52,6 +53,9 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <p class="text-muted text-center">
+                        Upload and manage your images here. Click on an image block then an image to select it for use in your document.
+                    </p>
                     <div id="imageGallery" class="d-flex flex-wrap justify-content-start"></div>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
@@ -61,22 +65,65 @@
             </div>
         </div>
     </div>
-    
-    <div class="modal fade" id="collaboratorsModal" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Active Collaborators</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+
+
+    <div class="modal fade" id="citationGalleryModal" tabindex="-1" role="dialog" aria-labelledby="citationGalleryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="citationGalleryModalLabel">Manage Citations</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="citationInstructions" class="text-muted" style="display: none;">
+                        <strong>Instructions:</strong> Please fill out as many fields as possible to ensure the citation is complete and useful. Not all fields are required, but a more complete citation provides better support for your work. Fields that are not applicable can simply be left blank.
+                    </p>
+                    <div id="citationListContainer" class="list-group" style="display:block;">
+                        <div id="citationList">
+                            <!-- Citations will be dynamically added here -->
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <ul id="collaboratorList"></ul>
+                    <div id="citationFormContainer" class="mt-4" style="display:none;">
+                        <select class="form-control mb-3" id="citationTypeSelect">
+                            <option value="article">Article</option>
+                            <option value="book">Book</option>
+                            <option value="chapter">Chapter</option>
+                            <option value="thesis">Thesis</option>
+                            <option value="report">Report</option>
+                            <option value="misc">Miscellaneous</option>
+                        </select>
+                        <form id="citationForm" class="form-horizontal">
+                            <!-- Dynamic form content will be loaded here based on selection -->
+                        </form>
+                        <button id="submitCitationForm" class="btn btn-success">Submit Citation</button>
                     </div>
+                </div>
+                <div id="modal-footer" class="modal-footer">
+                    <button id="showAddCitationFormButton" class="btn btn-primary">Add Citation</button>
                 </div>
             </div>
         </div>
+    </div>
+
+
+
+    <div class="modal fade" id="collaboratorsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Active Collaborators</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <ul id="collaboratorList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Share Link Modal -->
     <div class="modal fade" id="shareLinkModal" tabindex="-1" aria-labelledby="shareLinkModalLabel" aria-hidden="true">
@@ -112,7 +159,6 @@
             <block type="table_of_contents"></block>
             <block type="list_of_figures"></block>
             <block type="list_of_tables"></block>
-            <block type="add_bibliography"></block>
         </category>
         <category name="Document Structure" colour="230">
             <block type="chapter"></block>
@@ -170,13 +216,14 @@ function toggleCollaboratorsModal() {
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
 <!-- Editor logic -->
+<script src="/js/Editor/ImageScripts.js"></script>
+<script type="module" src="/js/Editor/CitationScripts.js"></script>
 <script src="/js/Editor/ShareButton.js"></script>
 <script type="module" src="/js/Editor/EditorMain.js"></script>
 <script type="module" src="/js/Editor/ChatLogic.js"></script>
-<script src="/js/Editor/ImageScripts.js"></script>
 
 <!-- Blockly blocks -->
-<script src="/js/Blockly/ConfigurationBlocks.js"></script>
+<script type="module" src="/js/Blockly/ConfigurationBlocks.js"></script>
 <script src="/js/Blockly/StructureBlocks.js"></script>
 <script src="/js/Blockly/TextBlocks.js"></script>
 <script src="/js/Blockly/ListBlocks.js"></script>
