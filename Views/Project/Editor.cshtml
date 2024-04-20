@@ -154,7 +154,12 @@
     <div id="quill-editor"></div>
     <div id="blocklyDiv"></div>
     <xml id="toolbox">
-        <category name="Configurations" colour="60">
+        <category name="Front pages" colour="0">
+            <block type="uia_thesis_front_page"></block>
+            <block type="uia_standard_report_front_page"></block>
+            <block type="uia_ikt_report_front_page"></block>
+        </category>    
+        <category name="Preliminaries" colour="30">
             <block type="document_configuration"></block>
             <block type="table_of_contents"></block>
             <block type="list_of_figures"></block>
@@ -224,6 +229,7 @@ function toggleCollaboratorsModal() {
 
 <!-- Blockly blocks -->
 <script type="module" src="/js/Blockly/ConfigurationBlocks.js"></script>
+<script src="/js/Blockly/FrontPageBlocks.js"></script>
 <script src="/js/Blockly/StructureBlocks.js"></script>
 <script src="/js/Blockly/TextBlocks.js"></script>
 <script src="/js/Blockly/ListBlocks.js"></script>
