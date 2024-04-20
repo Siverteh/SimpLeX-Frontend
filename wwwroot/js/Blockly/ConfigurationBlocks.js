@@ -5,9 +5,15 @@ Blockly.Blocks['document_start_block'] = {
         this.appendDummyInput()
             .setAlign(Blockly.ALIGN_CENTRE)
             .appendField("Document Start Block");
+
+        this.appendValueInput("FRONTPAGE")
+            .setCheck("FrontPage") // Only accept blocks of type "FrontPage"
+            .appendField("Front Page (optional) -->");
+        
         this.appendStatementInput("CONFIG")
             .setCheck("ConfigBlocks") // Only accept blocks of type "ConfigBlocks"
-            .appendField("Configurations (optional)");
+            .appendField("Preliminaries (optional) -->");
+
         this.setNextStatement(true, null); // Allows connection to blocks below
         this.setColour(60);
         this.setTooltip("Start of your LaTeX document. Configure document settings.");
@@ -16,10 +22,7 @@ Blockly.Blocks['document_start_block'] = {
         this.customContextMenu = function(options) {
             for (let i = options.length - 1; i >= 0; i--) {
                 if (options[i].text === 'Duplicate') {
-                    // Remove or disable the Duplicate option
-                    options.splice(i, 1); // This removes the option
-                    // Alternatively, you could disable the option by setting a flag
-                    // options[i].enabled = false;
+                    options.splice(i, 1); // Remove the Duplicate option
                 }
             }
         }
@@ -36,23 +39,28 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage[bookmarks=false,hidelinks]{hyperref}",
         "\\usepackage{float}",
         "\\usepackage{subcaption}",
-        "\\usepackage[backend=biber]{biblatex}"
+        "\\usepackage[backend=biber]{biblatex}",
+        "\\usepackage{transparent}",
+        "\\usepackage[table]{xcolor}",
+        "\\usepackage{eso-pic}",
+        "\\usepackage{psfrag}",
+        "\\usepackage{authblk}",
+        "\\usepackage[utf8]{inputenc}",
+        "\\usepackage[T1]{fontenc}",
+        "\\usepackage{array}",
+        "\\usepackage{geometry}",
+        "\\usepackage{svg}"
     ].join('\n');
 
+    var frontPageCode = Blockly.JavaScript.valueToCode(block, 'FRONTPAGE', Blockly.JavaScript.ORDER_ATOMIC) || '';
     var configCode = Blockly.JavaScript.statementToCode(block, 'CONFIG').trim();
-    var classOptions = 'a4paper, twoside, 12pt';  // default class options
+
+    var classOptions = 'a4paper, twoside, 11pt';  // default class options
     var docType = 'article';  // default document type
 
-    if (configCode) {
-        var matches = configCode.match(/\[(.*?)\]/);
-        if (matches) {
-            classOptions = matches[1];
-            docType = matches[1].split(',')[0].trim();
-        }
-    }
-
-    return `\\documentclass[${classOptions}]{${docType}}\n${packages}\n${globalCitations}\n\\begin{document}\n${configCode.replace(/\[.*?\]/, '')}\n\\pagenumbering{arabic}\\leavevmode\n`;
+    return `\\documentclass[${classOptions}]{${docType}}\n${packages}\n${globalCitations}\n\\begin{document}\n\\pagestyle{empty}\n${frontPageCode}\n${configCode.replace(/\[.*?\]/, '')}\n\\pagestyle{plain}\n\\pagenumbering{arabic}\\leavevmode\n`;
 };
+
 
 
 Blockly.Blocks['document_configuration'] = {
@@ -102,7 +110,7 @@ Blockly.Blocks['document_configuration'] = {
             ]), "COLUMNS");
         this.setPreviousStatement(true, "ConfigBlocks");
         this.setNextStatement(true, "ConfigBlocks");
-        this.setColour(60);
+        this.setColour(30);
         this.setTooltip("Configures document settings like type, size, orientation, and more.");
         this.setHelpUrl("");
     }
@@ -133,7 +141,7 @@ Blockly.Blocks['table_of_contents'] = {
             .appendField(new Blockly.FieldCheckbox("TRUE"), "CLEAR_PAGE");
         this.setPreviousStatement(true, "ConfigBlocks");
         this.setNextStatement(true, "ConfigBlocks");
-        this.setColour(60);
+        this.setColour(30);
         this.setTooltip("Adds a table of contents.");
         this.setHelpUrl("");
     }
@@ -156,7 +164,7 @@ Blockly.Blocks['list_of_figures'] = {
             .appendField(new Blockly.FieldCheckbox("TRUE"), "CLEAR_PAGE");
         this.setPreviousStatement(true, "ConfigBlocks");
         this.setNextStatement(true, "ConfigBlocks");
-        this.setColour(60);
+        this.setColour(30);
         this.setTooltip("Adds a list of figures.");
         this.setHelpUrl("");
     }
@@ -179,7 +187,7 @@ Blockly.Blocks['list_of_tables'] = {
             .appendField(new Blockly.FieldCheckbox("TRUE"), "CLEAR_PAGE");
         this.setPreviousStatement(true, "ConfigBlocks");
         this.setNextStatement(true, "ConfigBlocks");
-        this.setColour(60);
+        this.setColour(30);
         this.setTooltip("Adds a list of tables.");
         this.setHelpUrl("");
     }
