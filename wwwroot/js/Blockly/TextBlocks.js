@@ -151,10 +151,18 @@ class FieldRichTextEditor extends Blockly.Field {
         const quillEditorDiv = document.createElement('div');
         editorContainer.appendChild(quillEditorDiv);
 
-        // Initialize Quill
         const quill = new Quill(quillEditorDiv, {
             theme: 'snow',
-            // Include other necessary configurations for the toolbar
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    ['citeButton']  // Custom button for citations
+                ],
+                clipboard: {
+                    matchVisual: false // This option can help ensure that formatting is more consistent with user expectations when pasting text into Quill
+                }
+            },
+            formats: ['bold', 'italic', 'underline', 'list', 'bullet', 'link']  // Specify only the formats you are using
         });
         quill.root.innerHTML = this.convertLatexToHtml(this.value_);
 
@@ -170,31 +178,41 @@ class FieldRichTextEditor extends Blockly.Field {
             document.body.removeChild(overlay);
         });
     }
+
     convertHtmlToLatex(html) {
+        // Remove Quill-specific cursor spans
         html = html.replace(/<span class="ql-cursor">.*?<\/span>/g, '');
 
+        // Convert HTML formatting tags to LaTeX commands
         html = html.replace(/<strong>(.*?)<\/strong>/g, '\\textbf{$1}');
         html = html.replace(/<em>(.*?)<\/em>/g, '\\textit{$1}');
         html = html.replace(/<u>(.*?)<\/u>/g, '\\underline{$1}');
 
-        // Simplified handling of paragraphs to avoid introducing new lines for inline elements
-        html = html.replace(/<\/p>\s*<p>/g, '\n\n').replace(/^<p>/, '').replace(/<\/p>$/, '');
+        // Translate <br> tags to LaTeX new line
+        html = html.replace(/<br\s*\/?>/gi, '\\\\ ');  // Single line break
 
-        return html;
+        // Handle paragraphs: Double newlines for paragraph breaks
+        html = html.replace(/<\/p>\s*<p>/g, '\\\\ \\\\ ');  // Double LaTeX newlines for new paragraphs
+        html = html.replace(/^<p>|<\/p>$/g, '');  // Remove the redundant <p> tags at the start and end
+
+        // Normalize multiple consecutive newlines to avoid excessive spacing
+        html = html.replace(/(\\\\\s*){2,}/g, '\\\\ \\\\ ');  // Collapse multiple consecutive LaTeX newlines into two
+
+        return html.trim(); // Trim to remove any leading/trailing whitespace
     }
 
-
-
     convertLatexToHtml(latex) {
-        latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>')
-            .replace(/\\textit{(.*?)}/g, '<em>$1</em>')
-            .replace(/\\underline{(.*?)}/g, '<u>$1</u>');
+        // Convert LaTeX formatting commands to HTML tags
+        latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>');
+        latex = latex.replace(/\\textit{(.*?)}/g, '<em>$1</em>');
+        latex = latex.replace(/\\underline{(.*?)}/g, '<u>$1</u>');
 
-        // Convert explicit new lines in LaTeX to paragraph tags in HTML for clear separation
-        latex = latex.replace(/\n\n/g, '</p><p>');
+        // Handle LaTeX newlines and paragraph breaks
+        latex = latex.replace(/\\\\ \\\\ /g, '</p><p>'); // Double LaTeX newlines to HTML paragraph breaks
+        latex = latex.replace(/\\\\ /g, '<br>'); // Single LaTeX newlines to HTML <br>
 
-        // Wrap the entire content in a single paragraph if it doesn't already start with one
-        if (!latex.startsWith('<p>')) {
+        // Wrap content in paragraph tags if not already wrapped
+        if (!/^<p>/.test(latex)) {
             latex = `<p>${latex}</p>`;
         }
 
@@ -244,7 +262,7 @@ Blockly.Blocks['rich_text'] = {
 Blockly.JavaScript['rich_text'] = function(block) {
     var text = block.getFieldValue('TEXT');
     // The text is already in LaTeX format.
-    return text + '\n';
+    return text + '\\\\ \\\\ \n';
 };
 
 Blockly.Blocks['latex_href'] = {
