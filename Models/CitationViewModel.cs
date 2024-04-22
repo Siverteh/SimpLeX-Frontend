@@ -1,6 +1,7 @@
 public class CitationViewModel
 {
     public string ProjectId { get; set; }
+    public string CitationKey { get; set; }
     public string ReferenceType { get; set; }
     public string Authors { get; set; }
     public string Title { get; set; }

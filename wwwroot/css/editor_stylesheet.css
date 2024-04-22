@@ -292,6 +292,14 @@ iframe.pdfDisplay {
     align-items: center;  /* Vertically center the content if needed */
 }
 
+.custom-toolbar .ql-custom {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
 
-
+.custom-toolbar .ql-custom .fa {
+    font-size: 18px; /* Icon size */
+    color: #333; /* Icon color */
+}
 
