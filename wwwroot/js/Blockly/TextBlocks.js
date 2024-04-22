@@ -1,4 +1,4 @@
-class FieldHTMLTextInput extends Blockly.Field {
+export class FieldHTMLTextInput extends Blockly.Field {
     constructor(value, options) {
         super(value);
         this.SERIALIZABLE = true;
@@ -272,4 +272,5 @@ Blockly.JavaScript['latex_href'] = function(block) {
     var code = `\\href{${url}}{${text}}\n`;
     return code;
 };
+
 

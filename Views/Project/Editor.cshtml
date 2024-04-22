@@ -157,9 +157,11 @@
             <block type="uia_thesis_front_page"></block>
             <block type="uia_standard_report_front_page"></block>
             <block type="uia_ikt_report_front_page"></block>
+            <block type="generic_report_front_page"></block>
         </category>    
         <category name="Preliminaries" colour="30">
-            <block type="document_configuration"></block>
+            <block type="acknowledgements_page_block"></block>
+            <block type="abstract_page_block"></block>
             <block type="table_of_contents"></block>
             <block type="list_of_figures"></block>
             <block type="list_of_tables"></block>
@@ -227,12 +229,12 @@ function toggleCollaboratorsModal() {
 <script type="module" src="/js/Editor/ChatLogic.js"></script>
 
 <!-- Blockly blocks -->
+<script type="module" src="/js/Blockly/ImageBlocks.js"></script>
 <script type="module" src="/js/Blockly/ConfigurationBlocks.js"></script>
-<script src="/js/Blockly/FrontPageBlocks.js"></script>
+<script type="module" src="/js/Blockly/FrontPageBlocks.js"></script>
 <script src="/js/Blockly/StructureBlocks.js"></script>
-<script src="/js/Blockly/TextBlocks.js"></script>
+<script type="module" src="/js/Blockly/TextBlocks.js"></script>
 <script src="/js/Blockly/ListBlocks.js"></script>
-<script src="/js/Blockly/ImageBlocks.js"></script>
 
 </body>
 </html>

@@ -1,5 +1,5 @@
 var currentImageBlock = null; // Global reference to track the active image field
-class FieldImageButton extends Blockly.Field {
+export class FieldImageButton extends Blockly.Field {
     constructor(text, validator) {
         super(text, validator);
         this.SERIALIZABLE = true;
