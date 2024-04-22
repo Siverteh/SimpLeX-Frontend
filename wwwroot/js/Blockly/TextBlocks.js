@@ -102,12 +102,14 @@ Blockly.JavaScript['text_input_block'] = function(block) {
     return block.getFieldValue('TEXT_INPUT') + '\n';
 };
 
+export var currentQuillInstance = null;
 
-class FieldRichTextEditor extends Blockly.Field {
+export class FieldRichTextEditor extends Blockly.Field {
     constructor(text, opt_validator) {
         super(text, opt_validator);
         this.SERIALIZABLE = true;
         this.value_ = text || '';
+        this.quill = null;
     }
 
     static fromJson(options) {
@@ -136,9 +138,26 @@ class FieldRichTextEditor extends Blockly.Field {
         editorContainer.style.position = 'relative';
         editorContainer.style.width = '80%';
         editorContainer.style.maxWidth = '600px';
+        editorContainer.style.overflowY = 'auto';
+        editorContainer.style.maxHeight = '80vh';
         overlay.appendChild(editorContainer);
 
-        // Close button
+        let isDragging = false;
+
+        overlay.addEventListener('mousedown', function() {
+            isDragging = false;
+        });
+
+        overlay.addEventListener('mousemove', function() {
+            isDragging = true;
+        });
+
+        overlay.addEventListener('mouseup', (event) => {
+            if (event.target === overlay && !isDragging) {
+                this.closeEditor();
+            }
+        });
+
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
         closeButton.style.position = 'absolute';
@@ -147,79 +166,91 @@ class FieldRichTextEditor extends Blockly.Field {
         closeButton.style.cursor = 'pointer';
         editorContainer.appendChild(closeButton);
 
-        // Quill editor div
         const quillEditorDiv = document.createElement('div');
         editorContainer.appendChild(quillEditorDiv);
 
-        const quill = new Quill(quillEditorDiv, {
+        const icons = Quill.import('ui/icons');
+        icons['cite'] = '<i class="fa fa-book"></i>';
+
+        this.quill = new Quill(quillEditorDiv, {
             theme: 'snow',
             modules: {
-                toolbar: [
-                    ['bold', 'italic', 'underline'],
-                    ['citeButton']  // Custom button for citations
-                ],
+                toolbar: {
+                    container: [
+                        ['bold', 'italic', 'underline'],
+                        ['cite']
+                    ],
+                    handlers: {
+                        'cite': () => {
+                            $('#citationGalleryModal').modal('show');
+                        }
+                    }
+                },
                 clipboard: {
-                    matchVisual: false // This option can help ensure that formatting is more consistent with user expectations when pasting text into Quill
+                    matchVisual: false
                 }
             },
-            formats: ['bold', 'italic', 'underline', 'list', 'bullet', 'link']  // Specify only the formats you are using
+            formats: ['bold', 'italic', 'underline', 'list', 'bullet', 'link']
         });
-        quill.root.innerHTML = this.convertLatexToHtml(this.value_);
+        this.quill.root.innerHTML = this.convertLatexToHtml(this.value_);
 
-        // Close editor on close button click
-        closeButton.addEventListener('click', () => {
-            // Get the new value from Quill
-            const newValue = this.convertHtmlToLatex(quill.root.innerHTML);
+        currentQuillInstance = this.quill;
 
-            // Set the new value
-            this.setValue(newValue); // Make sure this line correctly updates the value
+        closeButton.onclick = () => this.closeEditor();
+    }
 
-            // Close the editor
-            document.body.removeChild(overlay);
-        });
+    closeEditor() {
+        const newValue = this.convertHtmlToLatex(this.quill.root.innerHTML);
+        this.setValue(newValue);
+        document.body.removeChild(this.quill.container.parentNode.parentNode); // Remove overlay
+        currentQuillInstance = null;
     }
 
     convertHtmlToLatex(html) {
-        // Remove Quill-specific cursor spans
-        html = html.replace(/<span class="ql-cursor">.*?<\/span>/g, '');
+        // Escape LaTeX special characters
+        html = html.replace(/&/g, '\\&');
+        html = html.replace(/{/g, '\\{');
+        html = html.replace(/}/g, '\\}');
+        html = html.replace(/%/g, '\\%');
+        html = html.replace(/\$/g, '\\$');
+        html = html.replace(/#/g, '\\#');
+        html = html.replace(/_/g, '\\_');
+        html = html.replace(/\[/g, '\\[');
+        html = html.replace(/]/g, '\\]');
 
-        // Convert HTML formatting tags to LaTeX commands
+        // Normal HTML to LaTeX conversions
         html = html.replace(/<strong>(.*?)<\/strong>/g, '\\textbf{$1}');
         html = html.replace(/<em>(.*?)<\/em>/g, '\\textit{$1}');
         html = html.replace(/<u>(.*?)<\/u>/g, '\\underline{$1}');
+        html = html.replace(/<br\s*\/?>/gi, '\\\\ ');
+        html = html.replace(/<\/p>\s*<p>/g, '\\\\ \\\\ ');
+        html = html.replace(/^<p>|<\/p>$/g, '');
+        html = html.replace(/(\\\\\s*){2,}/g, '\\\\ \\\\ ');
 
-        // Translate <br> tags to LaTeX new line
-        html = html.replace(/<br\s*\/?>/gi, '\\\\ ');  // Single line break
+        // Convert human-readable citation tags to LaTeX \cite commands
+        html = html.replace(/\[Cite: ([^\]]+)\]/g, '\\cite{$1}');
 
-        // Handle paragraphs: Double newlines for paragraph breaks
-        html = html.replace(/<\/p>\s*<p>/g, '\\\\ \\\\ ');  // Double LaTeX newlines for new paragraphs
-        html = html.replace(/^<p>|<\/p>$/g, '');  // Remove the redundant <p> tags at the start and end
-
-        // Normalize multiple consecutive newlines to avoid excessive spacing
-        html = html.replace(/(\\\\\s*){2,}/g, '\\\\ \\\\ ');  // Collapse multiple consecutive LaTeX newlines into two
-
-        return html.trim(); // Trim to remove any leading/trailing whitespace
+        return html.trim();
     }
 
+
     convertLatexToHtml(latex) {
-        // Convert LaTeX formatting commands to HTML tags
+        // Convert \cite commands to human-readable format immediately for editor display
+        latex = latex.replace(/\\cite{([^}]+)}/g, '[Cite: $1]');
+
+        // Standard LaTeX to HTML formatting
         latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>');
         latex = latex.replace(/\\textit{(.*?)}/g, '<em>$1</em>');
         latex = latex.replace(/\\underline{(.*?)}/g, '<u>$1</u>');
+        latex = latex.replace(/\\\\ \\\\ /g, '</p><p>');
+        latex = latex.replace(/\\\\ /g, '<br>');
 
-        // Handle LaTeX newlines and paragraph breaks
-        latex = latex.replace(/\\\\ \\\\ /g, '</p><p>'); // Double LaTeX newlines to HTML paragraph breaks
-        latex = latex.replace(/\\\\ /g, '<br>'); // Single LaTeX newlines to HTML <br>
-
-        // Wrap content in paragraph tags if not already wrapped
         if (!/^<p>/.test(latex)) {
             latex = `<p>${latex}</p>`;
         }
 
         return latex;
     }
-
-
 
     setValue(newValue) {
         if (this.value_ !== newValue) {

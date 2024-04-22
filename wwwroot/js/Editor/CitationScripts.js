@@ -1,3 +1,5 @@
+import {currentQuillInstance} from "../Blockly/TextBlocks.js";
+
 document.addEventListener('DOMContentLoaded', function() {
     const showAddCitationButton = document.getElementById('showAddCitationFormButton');
     const citationListContainer = document.getElementById('citationListContainer');
@@ -139,6 +141,7 @@ function createCitationDiv(citation) {
     const div = document.createElement('div');
     div.className = 'citation-entry list-group-item';
     div.id = `citation-${citation.citationId}`; // Assign a unique ID based on citation ID
+    div.setAttribute('data-citation-id', citation.citationId);
 
     let details = '';
     switch (citation.referenceType.toLowerCase()) {
@@ -165,6 +168,21 @@ function createCitationDiv(citation) {
             break;
     }
 
+    div.onclick = function() {
+        if (currentQuillInstance) {
+            const readableTag = `[Cite: ${citation.citationKey}]`; // Format for showing in the editor
+
+            const range = currentQuillInstance.getSelection(true);
+            if (range) {
+                currentQuillInstance.insertText(range.index, readableTag, 'user');
+                currentQuillInstance.insertText(range.index + readableTag.length, ' ', 'user'); // Optional: add a space after the tag
+                $('#citationGalleryModal').modal('hide');
+            }
+        } else {
+            console.error('No active Quill editor instance found.');
+        }
+    };
+    
     // Create delete button
     const deleteButton = document.createElement('button');
     deleteButton.textContent = 'X';
@@ -408,7 +426,7 @@ function formatCitationsForLatex(citations) {
         bibFields.push(`author = {${citation.authors || 'unknown'}}`);
         bibFields.push(`title = {${citation.title || 'untitled'}}`);
         bibFields.push(`year = {${citation.year || 'n.d.'}}`); // 'n.d.' for no date
-
+        
         switch (citation.referenceType.toLowerCase()) {
             case 'article':
                 entryType = 'article';
@@ -455,7 +473,7 @@ function formatCitationsForLatex(citations) {
         }
 
         // Construct the complete BibTeX entry
-        let entry = `@${entryType}{${citation.citationId},\n  ${bibFields.join(',\n  ')}\n}`;
+        let entry = `@${entryType}{${citation.citationKey},\n  ${bibFields.join(',\n  ')}\n}`;
         return entry;
     }).join('\n\n');
 

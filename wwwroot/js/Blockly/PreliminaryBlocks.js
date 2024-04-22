@@ -1,6 +1,6 @@
 import {globalCitations} from "../Editor/CitationScripts.js";
 
-import {FieldHTMLTextInput} from "./TextBlocks.js";
+import {FieldRichTextEditor} from "./TextBlocks.js";
 
 var globalDocType = 'article';
 
@@ -177,7 +177,7 @@ Blockly.Blocks['abstract_page_block'] = {
         this.appendDummyInput()
             .appendField("Add Abstract Page");
         this.appendDummyInput()
-            .appendField(new FieldHTMLTextInput("Enter Abstract here"), "ABSTRACT_TEXT");
+            .appendField(new FieldRichTextEditor("Enter Abstract here"), "ABSTRACT_TEXT");
         this.appendDummyInput()
             .setAlign(Blockly.ALIGN_CENTRE)
             .appendField("New page after abstract.")
@@ -191,7 +191,7 @@ Blockly.Blocks['abstract_page_block'] = {
 };
 
 Blockly.JavaScript['abstract_page_block'] = function(block) {
-    var abstractText = Blockly.JavaScript.valueToCode(block, 'ABSTRACT_TEXT', Blockly.JavaScript.ORDER_ATOMIC) || '"Enter Abstract Here"';
+    var abstractText = block.getFieldValue("ABSTRACT_TEXT")
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
     var code = `\\ifthenelse{\\equal{${globalDocType}}{report}}{\\chapter*{Abstract}}{\\section*{Abstract}}\n${abstractText}\n\\addcontentsline{toc}{${tocLevel}}{Abstract}\n${clearPage}\n`;
@@ -203,7 +203,7 @@ Blockly.Blocks['acknowledgements_page_block'] = {
         this.appendDummyInput()
             .appendField("Add Acknowledgements Page");
         this.appendDummyInput()
-            .appendField(new FieldHTMLTextInput("Enter Acknowledgements here"), "ACKNOWLEDGEMENTS_TEXT");
+            .appendField(new FieldRichTextEditor("Enter Acknowledgements here"), "ACKNOWLEDGEMENTS_TEXT");
         this.appendDummyInput()
             .setAlign(Blockly.ALIGN_CENTRE)
             .appendField("New page after acknowledgements.")
@@ -217,7 +217,7 @@ Blockly.Blocks['acknowledgements_page_block'] = {
 };
 
 Blockly.JavaScript['acknowledgements_page_block'] = function(block) {
-    var abstractText = Blockly.JavaScript.valueToCode(block, 'ACKNOWLEDGEMENTS_TEXT', Blockly.JavaScript.ORDER_ATOMIC) || '"Enter Acknowledgements Here"';
+    var abstractText = block.getFieldValue("ACKNOWLEDGEMENTS_TEXT")
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
     var code = `\\ifthenelse{\\equal{${globalDocType}}{report}}{\\chapter*{Acknowledgements}}{\\section*{Acknowledgements}}\n${abstractText}\n\\addcontentsline{toc}{${tocLevel}}{Acknowledgements}\n${clearPage}\n`;
