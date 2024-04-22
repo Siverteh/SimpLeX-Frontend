@@ -78,8 +78,6 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage{eso-pic}",
         "\\usepackage{psfrag}",
         "\\usepackage{authblk}",
-        "\\usepackage[utf8]{inputenc}",
-        "\\usepackage[T1]{fontenc}",
         "\\usepackage{array}",
         "\\usepackage{svg}"
     ].join('\n');
@@ -88,10 +86,10 @@ Blockly.JavaScript['document_start_block'] = function(block) {
     var configCode = Blockly.JavaScript.statementToCode(block, 'CONFIG').trim();
 
     // Starting the document class setup
-    var docSetup = `\\documentclass[a4paper, twoside, ${fontSize}]{${globalDocType}}\n${packages}\n${globalCitations}\n`;
+    var docSetup = `\\documentclass[a4paper, twoside, ${fontSize}]{${globalDocType}}\n${packages}\\setlength{\\parindent}{0pt}\n${globalCitations}\n`;
 
     // Begin document environment
-    var beginDocument = `\\begin{document}\n\\pagestyle{empty}\n${frontPageCode}\n\\clearpage\\n\\pagenumbering{gobble}\n`;
+    var beginDocument = `\\begin{document}\n\\pagestyle{empty}\n${frontPageCode}\n\\clearpage\n\\pagenumbering{gobble}\n`;
 
     // Applying Roman numerals for preliminaries
     var preliminaries = `\\pagenumbering{roman}\n${configCode}\n`;
