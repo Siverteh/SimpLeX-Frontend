@@ -235,3 +235,79 @@ Blockly.JavaScript['uia_ikt_report_front_page'] = function(block) {
 `;
     return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
+
+import {FieldImageButton} from "./ImageBlocks.js";
+
+Blockly.Blocks['generic_report_front_page'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Generic Report Front Page");
+
+        this.appendDummyInput()
+            .appendField(new FieldImageButton("Select Image"), "SRC");
+
+        this.appendDummyInput()
+            .appendField("Width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["Full width", "\\textwidth"],
+                ["3/4 width", "0.75\\textwidth"],
+                ["1/2 width", "0.5\\textwidth"],
+                ["1/4 width", "0.25\\textwidth"]
+            ]), "WIDTH");
+
+        this.appendDummyInput()
+            .appendField("Title")
+            .appendField(new Blockly.FieldTextInput("Enter title"), "TITLE");
+
+        this.appendDummyInput()
+            .appendField("Subtitle")
+            .appendField(new Blockly.FieldTextInput("Enter subtitle"), "SUBTITLE");
+
+        this.appendDummyInput()
+            .appendField("Author(s)")
+            .appendField(new Blockly.FieldTextInput("Author Name(s)"), "AUTHORS");
+
+        this.appendDummyInput()
+            .appendField("University/Institution")
+            .appendField(new Blockly.FieldTextInput("University of..."), "INSTITUTION");
+
+        this.appendDummyInput()
+            .appendField("Year/Date")
+            .appendField(new Blockly.FieldTextInput("2024"), "YEAR");
+
+        this.appendDummyInput()
+            .appendField("Supervisor")
+            .appendField(new Blockly.FieldTextInput("Supervisor Name"), "SUPERVISOR");
+
+        this.setColour(0);
+        this.setTooltip("Creates a customizable front page for reports.");
+        this.setHelpUrl("");
+        this.setOutput(true, "FrontPage");  // This block outputs a LaTeX front page segment
+    }
+};
+
+Blockly.JavaScript['generic_report_front_page'] = function(block) {
+    var imageUrl = block.getFieldValue('SRC');
+    var width = block.getFieldValue('WIDTH');
+    var title = block.getFieldValue('TITLE');
+    var subtitle = block.getFieldValue('SUBTITLE');
+    var authors = block.getFieldValue('AUTHORS');
+    var institution = block.getFieldValue('INSTITUTION');
+    var year = block.getFieldValue('YEAR');
+    var supervisor = block.getFieldValue('SUPERVISOR');
+
+    var code = `\\begin{titlepage}
+\\centering
+${imageUrl ? `\\includegraphics[width=${width}]{/data/images/${imageUrl}}\\\\[1cm]` : ''}
+{\\Huge \\textbf{${title}}} \\\\[0.4cm]
+{\\large ${subtitle}} \\\\[1cm]
+\\textit{Author(s):} ${authors} \\\\[1cm]
+\\textit{Institution:} ${institution} \\\\[1cm]
+\\textit{Year/Date:} ${year} \\\\[1cm]
+\\textit{Supervisor:} ${supervisor} \\\\[1cm]
+\\vfill
+\\end{titlepage}
+\\newpage
+`;
+    return [code, Blockly.JavaScript.ORDER_ATOMIC];
+};
