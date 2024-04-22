@@ -91,7 +91,7 @@ export async function displayMessage(chatMessage) {
     const isCurrentUser = chatMessage.userName === currentUser.userName;
 
     // Set the background color based on the user role or any specific criteria
-    const bubbleColor = isCurrentUser ? 'blue' : 'grey';
+    const bubbleColor = chatMessage.userId === currentUser.userId ? 'blue' : 'grey';
     messageBubble.style.backgroundColor = bubbleColor;
 
     // Additional styling for the chat bubble here...
@@ -118,4 +118,28 @@ export async function displayMessage(chatMessage) {
 
     // Scroll to the bottom of the chat content to show the new message
     chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+export async function loadChatMessages(projectId) {
+    const response = await fetch(`/Editor/ProxyGetChatMessages?projectId=${projectId}`);
+    if (!response.ok) {
+        console.error('Failed to load chat messages:', response.statusText);
+        return;
+    }
+    const data = await response.json();
+
+    // Access the $values property to get the array of messages
+    const messages = data.$values;
+
+    messages.forEach(message => {
+        // If message is also wrapped in a $values, you may need to dig deeper, 
+        // otherwise, use message directly
+        displayMessage({
+            messageId: message.messageId,
+            content: message.message,
+            timestamp: message.timestamp,
+            userId: message.userId
+            // Add other properties as needed
+        });
+    });
 }

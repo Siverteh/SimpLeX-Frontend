@@ -225,7 +225,7 @@ namespace SimpLeX_Frontend.Controllers
                 
                 var responseData = JsonConvert.DeserializeAnonymousType(content, new { message = "", projectId = "" });
                 
-                return Redirect($"http://10.225.149.19:31688/Editor/Edit?projectId={responseData?.projectId}");
+                return Redirect($"http://127.0.0.1:54519/Editor/Edit?projectId={responseData?.projectId}");
             }
             else
             {
@@ -277,7 +277,33 @@ namespace SimpLeX_Frontend.Controllers
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
+        
+        [HttpGet]
+        public async Task<IActionResult> ProxyGetChatMessages(string projectId)
+        {
+            var backendServiceUrl = $"http://simplex-backend-service:8080/api/Chat/GetChatMessages/{projectId}";
+            var token = HttpContext.Request.Cookies["JWTToken"];  // Retrieving JWT token from the request cookies
 
+            var httpClient = _httpClientFactory.CreateClient();
+            if (!string.IsNullOrEmpty(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            var response = await httpClient.GetAsync(backendServiceUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var messagesJson = await response.Content.ReadAsStringAsync();
+                return Content(messagesJson, "application/json");  // Forward the JSON response directly to the client
+            }
+            else
+            {
+                // Log the error or handle it as needed
+                _logger.LogError($"Failed to fetch chat messages: {response.StatusCode}");
+                return StatusCode((int)response.StatusCode, "Failed to fetch chat messages");
+            }
+        }
 
     }
 }
