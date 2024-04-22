@@ -12,9 +12,9 @@ class WebSocketService {
     connect(projectId, userName) {
         this.lastProjectId = projectId; // Save last projectId
         this.lastUserName = userName;   // Save last userName
-        this.disconnect(); // Ensure any existing connection is closed
+        this.disconnect(); // Ensure any existing connection is closed 
 
-        const url = `ws://127.0.0.1:49407/ws/${projectId}?userName=${encodeURIComponent(userName)}`;
+        const url = `ws://127.0.0.1:36197/ws/${projectId}?userName=${encodeURIComponent(userName)}`;
         this.socket = new WebSocket(url);
 
         // Setup a connection timeout
@@ -101,7 +101,7 @@ class WebSocketService {
     }
 
     sendMessage(action, data) {
-        const message = JSON.stringify({ Action: action, Data: data });
+        const message = JSON.stringify({Action: action, Data: data});
         if (this.isConnected) {
             this.socket.send(message);
         } else {

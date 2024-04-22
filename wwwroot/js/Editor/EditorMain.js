@@ -6,6 +6,7 @@ import {
     shouldAutosave
 } from "./BlocklyScripts.js";
 import { sendLocalCursorPosition, initializeCollaboration, throttle } from '../Collaboration/collaborationService.js';
+import {loadChatMessages} from "./ChatLogic.js";
 
 document.addEventListener('DOMContentLoaded', async function () {  // Note the async keyword here
     const workspace = initializeBlockly();
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async function () {  // Note the a
     // Initialize collaboration service
     const projectId = document.getElementById('projectId').value;
     await initializeCollaboration(workspace, projectId);  // Await the initialization
+    await loadChatMessages(projectId);
 
     workspace.addChangeListener(function (event) {
         ensureDocumentStartBlockExists(workspace);
@@ -37,5 +39,7 @@ document.addEventListener('DOMContentLoaded', async function () {  // Note the a
         await sendLocalCursorPosition(event);
     }, 50));
 });
+
+
 
 
