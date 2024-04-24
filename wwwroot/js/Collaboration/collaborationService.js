@@ -36,7 +36,7 @@ export async function initializeCollaboration(workspace, projectId) {
 
             wsService.sendMessage('blocklyUpdate', xmlText);
         }
-    }, 0);
+    }, 250);
 
 
     // Listen to Blockly workspace changes
