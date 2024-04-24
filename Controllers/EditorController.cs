@@ -172,6 +172,7 @@ namespace SimpLeX_Frontend.Controllers
                 var jwtToken = handler.ReadJwtToken(token);
                 var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 var userName = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value; 
+                Console.Write(userId + " - " + userName);
                 return new { UserId = userId, UserName = userName };
             }
             catch
