@@ -79,14 +79,16 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage{psfrag}",
         "\\usepackage{authblk}",
         "\\usepackage{array}",
-        "\\usepackage{svg}"
+        "\\usepackage{svg}",
+        "\\usepackage{listings}",
+        "\\usepackage[newfloat]{minted}"
     ].join('\n');
 
     var frontPageCode = Blockly.JavaScript.valueToCode(block, 'FRONTPAGE', Blockly.JavaScript.ORDER_ATOMIC) || '';
     var configCode = Blockly.JavaScript.statementToCode(block, 'CONFIG').trim();
 
     // Starting the document class setup
-    var docSetup = `\\documentclass[a4paper, twoside, ${fontSize}]{${globalDocType}}\n${packages}\\setlength{\\parindent}{0pt}\n${globalCitations}\n`;
+    var docSetup = `\\documentclass[a4paper, ${fontSize}]{${globalDocType}}\n${packages}\\setlength{\\parindent}{0pt}\n${globalCitations}\n`;
 
     // Begin document environment
     var beginDocument = `\\begin{document}\n\\pagestyle{empty}\n${frontPageCode}\n\\clearpage\n\\pagenumbering{gobble}\n`;

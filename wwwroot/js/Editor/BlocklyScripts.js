@@ -59,7 +59,7 @@ export function ensureDocumentStartBlockExists(workspace) {
         startBlock.initSvg();
         startBlock.render();
         // Optionally, set the position of the block
-        startBlock.moveBy(400, 50);
+        startBlock.moveBy(200, 50);
     }
 }
 

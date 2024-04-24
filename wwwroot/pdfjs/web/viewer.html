@@ -500,15 +500,29 @@ See https://github.com/adobe-type-tools/cmap-resources
     <input type="file" id="fileInput" class="hidden">
 
     <!-- Place this right before the closing </body> tag in your viewer.html -->
+    <!-- This script should be included in your PDF.js viewer.html or a custom script file linked therein -->
     <script>
-      window.addEventListener('message', (event) => {
-        console.log("PDF.js received message:", event.data);
-        if (event.data && event.data.type === 'GET_CURRENT_PAGE') {
-          const currentPage = PDFViewerApplication.pdfViewer.currentPageNumber;
-          console.log("Sending current page number:", currentPage);
-          event.source.postMessage({ type: 'CURRENT_PAGE', page: currentPage }, '*');
-        }
+      document.addEventListener("DOMContentLoaded", function() {
+        window.addEventListener('message', (event) => {
+          if (event.data.type === 'GO_TO_PAGE' && PDFViewerApplication.pdfDocument) {
+            // Ensure document is loaded
+            PDFViewerApplication.initializedPromise.then(() => {
+              PDFViewerApplication.page = event.data.page;
+              console.log(`Navigated to page: ${event.data.page}`);
+            });
+          }
+
+          if (event.data.type === 'GET_CURRENT_PAGE' && PDFViewerApplication.pdfViewer) {
+            const currentPage = PDFViewerApplication.pdfViewer.currentPageNumber;
+            event.source.postMessage({ type: 'CURRENT_PAGE', page: currentPage }, '*');
+          }
+        });
+
+        PDFViewerApplication.initializedPromise.then(() => {
+          window.parent.postMessage({ type: 'PDF_JS_READY' }, '*'); // Notify when truly ready
+        });
       });
+
     </script>
 
   </body>

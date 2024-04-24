@@ -175,14 +175,19 @@
             <block type="new_page"></block>
         </category>
         <category name="Text" colour="160">
-            <block type="text_input_block"></block>
-            <block type="rich_text"></block>
+            <block type="regular_text_block"></block>
+            <block type="text_left_text_right_multicolumn"></block>
+            <block type="text_left_image_right_multicolumn"></block>
+            <block type="image_left_text_right_multicolumn"></block>
             <block type="latex_href"></block>
         </category>
         <category name="Images" colour="40">
             <block type="latex_standard_image"></block>
             <block type="latex_simple_image"></block>
             <block type="latex_detailed_image"></block>
+        </category>
+        <category name="Tables and Matrices" colour="75">
+            <block type="latex_table"></block>
         </category>
         <category name="Lists" colour="260">
             <block type="latex_item"></block>
@@ -191,6 +196,10 @@
             <block type="latex_alph_list"></block>
             <block type="latex_description_list"></block>
             <block type="latex_description_item"></block>
+        </category>
+        <category name="Listings and Code" colour="300">
+            <block type="latex_code_listing"></block>
+            <block type="latex_minted_code"></block>
         </category>
     </xml>
     <div class="pdf-viewer" id="pdf-viewer">
@@ -236,6 +245,10 @@ function toggleCollaboratorsModal() {
 <script src="/js/Blockly/StructureBlocks.js"></script>
 <script type="module" src="/js/Blockly/TextBlocks.js"></script>
 <script src="/js/Blockly/ListBlocks.js"></script>
+<script type="module" src="/js/Blockly/ListingAndCodeBlocks.js"></script>
+<script src="/js/Blockly/TableBlocks.js"></script>
+
+
 
 </body>
 </html>
