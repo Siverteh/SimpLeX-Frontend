@@ -206,6 +206,17 @@ iframe.pdfDisplay {
     padding: 15px; /* Reduced padding might help */
 }
 
+#imageGalleryModal .modal-content {
+    height: auto; /* Auto height based on content */
+    max-height: 80vh; /* 80% of the viewport height */
+    overflow: hidden; /* Hide overflow */
+    overflow-y: auto;
+}
+
+#imageGalleryModal .modal-body {
+    padding: 15px; /* Reduced padding might help */
+}
+
 #imageGallery img {
     width: 100px;
     height: 100px;
