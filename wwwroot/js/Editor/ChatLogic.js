@@ -7,14 +7,18 @@ document.addEventListener('DOMContentLoaded', function () {
         var chatWindow = document.getElementById('chat-window');
         if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
             chatWindow.style.display = 'block';
-            chatWindow.style.width = '20%';
+            chatWindow.style.width = '350px';
+
+
             document.getElementById('pdf-viewer').style.width = '40%';
             document.getElementById('blocklyDiv').style.width = '40%';
+
         } else {
             chatWindow.style.display = 'none';
             document.getElementById('pdf-viewer').removeAttribute("style");
             document.getElementById('blocklyDiv').removeAttribute("style");
         }
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     });
 });
 
@@ -49,14 +53,15 @@ async function sendChat() {
         console.error('Cannot send an empty message.');
         return;
     }
-    
+
     inputElement.value = "";
     fetchUserData().then(async r => {
             if (currentUser) {
                 const chat = {
-                    userName: currentUser.userName,
                     content: chatContent,
-                    timestamp: new Date().toLocaleDateString()
+                    timestamp: new Date().toISOString(),
+                    userId: currentUser.userId,
+                    userName: currentUser.userName,
                 };
                 wsService.sendMessage('newChat', chat);
                 await displayMessage(chat);
@@ -69,52 +74,70 @@ async function sendChat() {
 
 // Function to append messages to the chat content area
 export async function displayMessage(chatMessage) {
-    
     await fetchUserData();
-    
+
     if (!chatMessage) {
         console.error('Chat message is null.');
         return;
-    } else if (!currentUser){
+    } else if (!currentUser) {
         console.error('User data is null.');
         return;
     }
 
     const chatContainer = document.querySelector('.chat-content');
-
-    // Create the chat bubble
     const messageBubble = document.createElement('div');
-    messageBubble.classList.add('chat-bubble');
 
-    // Check if the current user sent the message
-    const isCurrentUser = chatMessage.userName === currentUser.userName;
+    // Ternary operation to set the class name based on user ID comparison
+    messageBubble.className = currentUser.userId === chatMessage.userId
+        ? "talk-bubble-right tri-right btm-right"
+        : "talk-bubble-left tri-right btm-left";
 
-    // Set the background color based on the user role or any specific criteria
-    const bubbleColor = isCurrentUser ? 'blue' : 'grey';
-    messageBubble.style.backgroundColor = bubbleColor;
+    const messageTextContainer = document.createElement('div');
+    messageTextContainer.className = 'talktext';
 
-    // Additional styling for the chat bubble here...
+    const messageParagraph = document.createElement('p');
+    messageParagraph.textContent = chatMessage.content;
+    messageTextContainer.appendChild(messageParagraph);
 
-    // Align message to the right if it's from the current user
-    if (isCurrentUser) {
-        messageBubble.style.marginLeft = 'auto';
-    } else {
-        messageBubble.style.marginRight = 'auto';
-    }
+    // Creating the chat meta div that will hold the username or some other identifier
+    const chatMeta = document.createElement('div');
+    chatMeta.className = currentUser.userId === chatMessage.userId
+        ? "chat-meta-right"
+        : "chat-meta-left";
 
-    // Add the text to the bubble
-    const messageText = document.createElement('span');
-    messageText.textContent = chatMessage.content;
-    messageBubble.appendChild(messageText);
+    const chatMetaParagraph = document.createElement('p');
+    chatMetaParagraph.textContent = `${chatMessage.userName} - ${chatMessage.timestamp}`
+    chatMeta.appendChild(chatMetaParagraph);
 
-    // Add timestamp
-    const timestamp = document.createElement('span');
-    timestamp.textContent = chatMessage.timestamp;
-    // Styling for the timestamp here...
+    // Append the message text and meta information to the message bubble
+    messageBubble.appendChild(messageTextContainer);
+    messageBubble.appendChild(chatMeta);
 
-    // Append the bubble to the chat content area
+    // Append the message bubble to the chat container
     chatContainer.appendChild(messageBubble);
 
     // Scroll to the bottom of the chat content to show the new message
     chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+
+export async function loadChatMessages(projectId) {
+    const response = await fetch(`/Editor/ProxyGetChatMessages?projectId=${projectId}`);
+    if (!response.ok) {
+        console.error('Failed to load chat messages:', response.statusText);
+        return;
+    }
+
+    const data = await response.json();
+    const messages = data.$values;
+
+    messages.forEach(message => {
+        displayMessage({
+            messageId: message.messageId,
+            content: message.message,
+            timestamp: message.timestamp,
+            userId: message.userId,
+            userName: message.userName
+        });
+    });
 }

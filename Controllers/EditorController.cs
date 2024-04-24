@@ -101,8 +101,6 @@ namespace SimpLeX_Frontend.Controllers
                 return Json(new { success = false, message = "Failed to compile document.", errorMessage = errorContent });
             }
         }
-
-
         
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -174,6 +172,7 @@ namespace SimpLeX_Frontend.Controllers
                 var jwtToken = handler.ReadJwtToken(token);
                 var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 var userName = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value; 
+                Console.Write(userId + " - " + userName);
                 return new { UserId = userId, UserName = userName };
             }
             catch
@@ -227,7 +226,7 @@ namespace SimpLeX_Frontend.Controllers
                 
                 var responseData = JsonConvert.DeserializeAnonymousType(content, new { message = "", projectId = "" });
                 
-                return Redirect($"http://10.225.149.19:31688/Editor/Edit?projectId={responseData?.projectId}");
+                return Redirect($"http://127.0.0.1:54519/Editor/Edit?projectId={responseData?.projectId}");
             }
             else
             {
@@ -235,5 +234,77 @@ namespace SimpLeX_Frontend.Controllers
                 return Json(new { success = false, message = "error failed." });
             }
         }
+        
+        // Adjusted to handle IFormFile directly instead of base64 strings.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadImage()
+        {
+            var file = Request.Form.Files[0];
+            var projectId = Request.Form["projectId"].ToString();
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file selected");
+            }
+            if (string.IsNullOrWhiteSpace(projectId))
+            {
+                return BadRequest("Project ID is required.");
+            }
+
+            var httpClient = _httpClientFactory.CreateClient("BackendService"); // Ensure this client is correctly configured
+            var token = Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized("Token is not supplied.");
+            }
+
+            using var formData = new MultipartFormDataContent();
+            using var fileContent = new StreamContent(file.OpenReadStream());
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);  // Dynamically assign the correct content type
+
+            formData.Add(fileContent, "file", file.FileName);
+            formData.Add(new StringContent(projectId), "projectId");
+
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Images/UploadImage", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadAsStringAsync();
+                return Content(responseData, "application/json");
+            }
+            else
+            {
+                return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+            }
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> ProxyGetChatMessages(string projectId)
+        {
+            var backendServiceUrl = $"http://simplex-backend-service:8080/api/Chat/GetChatMessages/{projectId}";
+            var token = HttpContext.Request.Cookies["JWTToken"];  // Retrieving JWT token from the request cookies
+
+            var httpClient = _httpClientFactory.CreateClient();
+            if (!string.IsNullOrEmpty(token))
+            {
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            var response = await httpClient.GetAsync(backendServiceUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var messagesJson = await response.Content.ReadAsStringAsync();
+                return Content(messagesJson, "application/json");  // Forward the JSON response directly to the client
+            }
+            else
+            {
+                // Log the error or handle it as needed
+                _logger.LogError($"Failed to fetch chat messages: {response.StatusCode}");
+                return StatusCode((int)response.StatusCode, "Failed to fetch chat messages");
+            }
+        }
+
     }
 }

@@ -29,9 +29,16 @@ body {
 }
 
 .additional-info {
-    font-size: 0.75em; /* Smaller font size for word count and collaborators */
-    text-align: center;
+    font-size: 16px; /* Adjust size as necessary */
     color: white;
+}
+
+.word-count {
+    margin-right: 5px; /* Adds spacing between the word count and the collaborator count */
+}
+
+.collaborators-count {
+    cursor: pointer; /* Changes the cursor to a pointer to indicate this is clickable */
 }
 
 .left-buttons, .right-buttons {
@@ -174,20 +181,26 @@ iframe.pdfDisplay {
 .chat-input {
     position: absolute;
     bottom: 0;
-    width: calc(100% - 20px);
-    padding: 10px;
+    width: 350px;
+    padding: 5px;
     background: white;
 }
 
 .chat-input input {
-    width: 70%;
-    padding: 5px 10px;
+    width: 100%;
+    padding: 5px;
     margin-right: 5px;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 
-.chat-input button {
-    padding: 5px 10px;
+#imageGallery img {
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    object-fit: cover;
 }
 
 
