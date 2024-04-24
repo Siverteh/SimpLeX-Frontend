@@ -40,9 +40,67 @@ function changeIframeSrc(iframe, src) {
     iframe.parentNode.replaceChild(frame, iframe);
 }
 
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'PDF_JS_READY') {
+        navigateToSavedPage(); // This should now navigate correctly
+    }
+    if (event.data.type === 'CURRENT_PAGE') {
+        console.log("Received current page from PDF.js viewer:", event.data.page);
+        localStorage.setItem('currentPdfPage', event.data.page.toString());
+    }
+});
+
+function navigateToSavedPage() {
+    const currentPage = parseInt(localStorage.getItem('currentPdfPage') || "1", 10);
+    const pdfIframe = document.getElementById('pdfDisplay');
+
+    if (pdfIframe && pdfIframe.contentWindow) {
+        let attempts = 0;
+        const maxAttempts = 50;
+        const interval = setInterval(async () => {
+            const PDFApp = pdfIframe.contentWindow.PDFViewerApplication;
+
+            if (PDFApp && PDFApp.pdfViewer && PDFApp.pdfDocument && PDFApp.initialized) {
+                try {
+                    const numPages = PDFApp.pdfDocument.numPages;
+                    if (currentPage > 0 && currentPage <= numPages) {
+                        clearInterval(interval);
+                        PDFApp.page = currentPage;
+                        console.log(`Navigated to page ${currentPage} after ${attempts + 1} attempts.`);
+                    } else {
+                        console.error(`currentPageNumber: "${currentPage}" is not a valid page.`);
+                        clearInterval(interval);
+                    }
+                } catch (error) {
+                    console.error("Error navigating in PDF:", error);
+                    clearInterval(interval);
+                }
+            } else if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.error("Failed to navigate within maximum attempts.");
+            }
+            attempts++;
+        }, 25);
+    }
+}
+
+
+
+
+function requestCurrentPage() {
+    const pdfIframe = document.getElementById('pdfDisplay');
+    if (pdfIframe.contentWindow) {
+        console.log("Requesting current page from PDF.js viewer...");
+        pdfIframe.contentWindow.postMessage({ type: 'GET_CURRENT_PAGE' }, '*');
+    } else {
+        console.log("PDF iframe contentWindow not accessible.");
+    }
+}
+
 export function compileLatexContent(workspace) {
+    requestCurrentPage()
     const projectId = document.getElementById('projectId').value;
-    const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
+    const latexContent = compileConnectedBlocks(workspace) + '\\newpage\n\\printbibliography\n\\end{document}';
 
     var formData = new FormData();
     formData.append('projectId', projectId);
@@ -67,8 +125,8 @@ export function compileLatexContent(workspace) {
             if (data.success && data.pdfData) {
                 // Display the PDF if compilation was successful and data was received
                 displayPDF(data.pdfData);
-                console.log(data.wordCount);
                 updateProjectTitle(data.wordCount);
+                
             } else {
                 // Handle the case where compilation was successful but no PDF data was returned
                 console.error('Failed to load PDF:', data.message);
@@ -86,7 +144,7 @@ function updateProjectTitle(wordCount) {
 
 export function autoSaveLatexContent(workspace) {
     const projectId = document.getElementById('projectId').value;
-    const latexContent = compileConnectedBlocks(workspace) + '\\end{document}';
+    const latexContent = compileConnectedBlocks(workspace) + '\\newpage\n\\printbibliography\n\\end{document}';
     const workspaceState = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
     
     var formData = new FormData();

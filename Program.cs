@@ -4,6 +4,7 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,7 +41,6 @@ app.UseStaticFiles(new StaticFileOptions
         { ".ftl", "text/plain" } // Assuming .ftl files are plain text
     })
 });
-
 
 app.UseRouting();
 

@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (ViewBag.error != null)
+{
+    <div class="alert alert-danger">@ViewBag.error</div>
+}
+
+<div>
+    <h3>Upload Image</h3>
+    <form asp-controller="Admin" asp-action="UploadImage" enctype="multipart/form-data" method="post">
+        <div>
+            <label>Image File:</label>
+            <input type="file" name="file" required />
+            <input type="submit" value="Upload Image" />
+        </div>
+    </form>
+</div>
+
+<div>
+    <h3>Add Global Template</h3>
+    <form asp-controller="Admin" asp-action="AddTemplate" method="post">
+        <div>
+            <label>Template Name:</label>
+            <input type="text" name="templateName" required />
+        </div>
+        <div>
+            <label>XML Content:</label>
+            <textarea name="xmlContent" required></textarea>
+        </div>
+        <div>
+            <label>Image Path:</label>
+            <input type="text" name="imagePath" required />
+        </div>
+        <input type="submit" value="Add Template" />
+    </form>
+</div>

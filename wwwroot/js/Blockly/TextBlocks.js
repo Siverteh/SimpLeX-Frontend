@@ -1,113 +1,12 @@
-class FieldHTMLTextInput extends Blockly.Field {
-    constructor(value, options) {
-        super(value);
-        this.SERIALIZABLE = true;
-        this.value_ = value;
-        this.options_ = options || {};
-    }
+import {FieldImageButton} from "./ImageBlocks.js";
+export var currentQuillInstance = null;
 
-    static fromJson(options) {
-        return new FieldHTMLTextInput(options['text'], options);
-    }
-
-    showEditor_() {
-        const div = document.createElement('div');
-        document.body.appendChild(div);
-
-        // Apply styles to the container div
-        div.style.position = 'absolute';
-        div.style.zIndex = '1000'; // Ensure it's above other elements
-
-        const textarea = document.createElement('textarea');
-        textarea.value = this.value_;
-
-        // Styling the textarea for a better visual integration
-        textarea.style.width = '500px'; // Adjust width as needed
-        textarea.style.height = '300px'; // Adjust height as needed
-        textarea.style.fontSize = '14px'; // Match Blockly's font size
-        textarea.style.border = '1px solid #ccc'; // Light border to match Blockly aesthetic
-        textarea.style.borderRadius = '4px'; // Rounded corners
-        textarea.style.padding = '5px'; // Padding inside the textarea
-        textarea.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)'; // Soft shadow for depth
-        textarea.style.resize = 'none'; // Disable resizing to maintain consistent appearance
-
-        div.appendChild(textarea);
-
-        // Positioning logic remains as previously outlined
-        // This example uses the block's position as a base for the placement
-        const blockPosition = this.sourceBlock_.getRelativeToSurfaceXY();
-        const scale = this.sourceBlock_.workspace.scale;
-        const fieldPosition = this.getAbsoluteXY_();
-        div.style.left = `${fieldPosition.x}px`;
-        div.style.top = `${fieldPosition.y}px`;
-        div.style.transform = `scale(${scale})`;
-        div.style.transformOrigin = 'left top';
-
-        textarea.focus();
-        textarea.select();
-
-        textarea.onblur = () => {
-            this.setValue(textarea.value);
-            div.remove(); // Clean up the div when the textarea loses focus
-        };
-    }
-
-    render_() {
-        // Set the field's text to a truncated version of the textarea's content
-        this.text_ = this.value_;
-        super.render_();
-    }
-
-    setValue(newValue) {
-        if (this.value_ !== newValue) {
-            const oldValue = this.value_;
-            this.value_ = newValue;
-            this.forceRerender();
-
-            // Generate a Blockly change event for this field change
-            Blockly.Events.fire(new Blockly.Events.BlockChange(
-                this.sourceBlock_, 'field', this.name, oldValue, newValue));
-        }
-    }
-
-
-    getValue() {
-        return this.value_;
-    }
-}
-
-Blockly.fieldRegistry.register('field_html_text_input', FieldHTMLTextInput);
-
-Blockly.Blocks['text_input_block'] = {
-    init: function() {
-        this.jsonInit({
-            "message0": "Text input %1",
-            "args0": [
-                {
-                    "type": "field_html_text_input",
-                    "name": "TEXT_INPUT",
-                    "text": "Enter text here",
-                }
-            ],
-            "colour": 160,
-            "previousStatement": null,
-            "nextStatement": null,
-            "tooltip": "Custom text input block.",
-            "helpUrl": ""
-        });
-    }
-};
-
-Blockly.JavaScript['text_input_block'] = function(block) {
-    return block.getFieldValue('TEXT_INPUT') + '\n';
-};
-
-
-class FieldRichTextEditor extends Blockly.Field {
+export class FieldRichTextEditor extends Blockly.Field {
     constructor(text, opt_validator) {
         super(text, opt_validator);
         this.SERIALIZABLE = true;
         this.value_ = text || '';
+        this.quill = null;
     }
 
     static fromJson(options) {
@@ -136,9 +35,26 @@ class FieldRichTextEditor extends Blockly.Field {
         editorContainer.style.position = 'relative';
         editorContainer.style.width = '80%';
         editorContainer.style.maxWidth = '600px';
+        editorContainer.style.overflowY = 'auto';
+        editorContainer.style.maxHeight = '80vh';
         overlay.appendChild(editorContainer);
 
-        // Close button
+        let isDragging = false;
+
+        overlay.addEventListener('mousedown', function() {
+            isDragging = false;
+        });
+
+        overlay.addEventListener('mousemove', function() {
+            isDragging = true;
+        });
+
+        overlay.addEventListener('mouseup', (event) => {
+            if (event.target === overlay && !isDragging) {
+                this.closeEditor();
+            }
+        });
+
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
         closeButton.style.position = 'absolute';
@@ -147,61 +63,87 @@ class FieldRichTextEditor extends Blockly.Field {
         closeButton.style.cursor = 'pointer';
         editorContainer.appendChild(closeButton);
 
-        // Quill editor div
         const quillEditorDiv = document.createElement('div');
         editorContainer.appendChild(quillEditorDiv);
 
-        // Initialize Quill
-        const quill = new Quill(quillEditorDiv, {
+        const icons = Quill.import('ui/icons');
+        icons['cite'] = '<i class="fa fa-book"></i>';
+
+        this.quill = new Quill(quillEditorDiv, {
             theme: 'snow',
-            // Include other necessary configurations for the toolbar
+            modules: {
+                toolbar: {
+                    container: [
+                        ['bold', 'italic', 'underline'],
+                        ['cite']
+                    ],
+                    handlers: {
+                        'cite': () => {
+                            $('#citationGalleryModal').modal('show');
+                        }
+                    }
+                },
+                clipboard: {
+                    matchVisual: false
+                }
+            },
+            formats: ['bold', 'italic', 'underline', 'list', 'bullet', 'link']
         });
-        quill.root.innerHTML = this.convertLatexToHtml(this.value_);
+        this.quill.root.innerHTML = this.convertLatexToHtml(this.value_);
 
-        // Close editor on close button click
-        closeButton.addEventListener('click', () => {
-            // Get the new value from Quill
-            const newValue = this.convertHtmlToLatex(quill.root.innerHTML);
+        currentQuillInstance = this.quill;
 
-            // Set the new value
-            this.setValue(newValue); // Make sure this line correctly updates the value
-
-            // Close the editor
-            document.body.removeChild(overlay);
-        });
+        closeButton.onclick = () => this.closeEditor();
     }
-    convertHtmlToLatex(html) {
-        html = html.replace(/<span class="ql-cursor">.*?<\/span>/g, '');
 
+    closeEditor() {
+        const newValue = this.convertHtmlToLatex(this.quill.root.innerHTML);
+        this.setValue(newValue);
+        document.body.removeChild(this.quill.container.parentNode.parentNode); // Remove overlay
+        currentQuillInstance = null;
+    }
+
+    convertHtmlToLatex(html) {
+        // Escape LaTeX special characters
+        html = html.replace(/&/g, '\\&');
+        html = html.replace(/%/g, '\\%');
+        html = html.replace(/\$/g, '\\$');
+        html = html.replace(/#/g, '\\#');
+        html = html.replace(/_/g, '\\_');
+
+        // Normal HTML to LaTeX conversions
         html = html.replace(/<strong>(.*?)<\/strong>/g, '\\textbf{$1}');
         html = html.replace(/<em>(.*?)<\/em>/g, '\\textit{$1}');
         html = html.replace(/<u>(.*?)<\/u>/g, '\\underline{$1}');
+        html = html.replace(/<br\s*\/?>/gi, '\\\\ ');
+        html = html.replace(/<\/p>\s*<p>/g, '\\\\ \\\\ ');
+        html = html.replace(/^<p>|<\/p>$/g, '');
+        html = html.replace(/(\\\\\s*){2,}/g, '\\\\ \\\\ ');
 
-        // Simplified handling of paragraphs to avoid introducing new lines for inline elements
-        html = html.replace(/<\/p>\s*<p>/g, '\n\n').replace(/^<p>/, '').replace(/<\/p>$/, '');
+        // Convert human-readable citation tags to LaTeX \cite commands
+        html = html.replace(/\[Cite: ([^\]]+)\]/g, '\\cite{$1}');
 
-        return html;
+        return html.trim();
     }
 
 
-
     convertLatexToHtml(latex) {
-        latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>')
-            .replace(/\\textit{(.*?)}/g, '<em>$1</em>')
-            .replace(/\\underline{(.*?)}/g, '<u>$1</u>');
+        // Convert \cite commands to human-readable format immediately for editor display
+        latex = latex.replace(/\\cite{([^}]+)}/g, '[Cite: $1]');
 
-        // Convert explicit new lines in LaTeX to paragraph tags in HTML for clear separation
-        latex = latex.replace(/\n\n/g, '</p><p>');
+        // Standard LaTeX to HTML formatting
+        latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>');
+        latex = latex.replace(/\\textit{(.*?)}/g, '<em>$1</em>');
+        latex = latex.replace(/\\underline{(.*?)}/g, '<u>$1</u>');
+        latex = latex.replace(/\\\\ \\\\ /g, '</p><p>');
+        latex = latex.replace(/\\\\ /g, '<br>');
 
-        // Wrap the entire content in a single paragraph if it doesn't already start with one
-        if (!latex.startsWith('<p>')) {
+        if (!/^<p>/.test(latex)) {
             latex = `<p>${latex}</p>`;
         }
 
         return latex;
     }
-
-
 
     setValue(newValue) {
         if (this.value_ !== newValue) {
@@ -220,31 +162,196 @@ class FieldRichTextEditor extends Blockly.Field {
 
 Blockly.fieldRegistry.register('field_rich_text_editor', FieldRichTextEditor);
 
-
-Blockly.Blocks['rich_text'] = {
+Blockly.Blocks['regular_text_block'] = {
     init: function() {
-        this.jsonInit({
-            "message0": "Rich text %1",
-            "args0": [
-                {
-                    "type": "field_rich_text_editor",
-                    "name": "TEXT",
-                    "text": "Type here...",
-                }
-            ],
-            "colour": 160,
-            "previousStatement": null,
-            "nextStatement": null,
-            "tooltip": "A block for rich text input.",
-            "helpUrl": ""
-        });
+        this.appendDummyInput()
+            .appendField("Regular text block");
+
+        this.appendDummyInput()
+            .appendField(new FieldRichTextEditor("Type text here..."), "TEXT");
+
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(160);
+        this.setTooltip("A block for normal text input.");
+        this.setHelpUrl("");
     }
 };
 
-Blockly.JavaScript['rich_text'] = function(block) {
+Blockly.JavaScript['regular_text_block'] = function(block) {
     var text = block.getFieldValue('TEXT');
     // The text is already in LaTeX format.
-    return text + '\n';
+    return text + '\\\\ \\\\ \n';
+};
+
+Blockly.Blocks['text_left_image_right_multicolumn'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Multicolumn text: Text Left - Image Right");
+
+        this.appendDummyInput()
+            .appendField(new FieldRichTextEditor("Type text here..."), "TEXT");
+
+        this.appendDummyInput()
+            .appendField("Text width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["10%", "0.1"],
+                ["20%", "0.2"],
+                ["30%", "0.3"],
+                ["40%", "0.4"],
+                ["45%", "0.45"]
+            ]), "TEXT_WIDTH");
+
+        this.appendDummyInput()
+            .appendField(new FieldImageButton("Select Image"), "SRC");
+
+        this.appendDummyInput()
+            .appendField("Image width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["10%", "0.1"],
+                ["20%", "0.2"],
+                ["30%", "0.3"],
+                ["40%", "0.4"],
+                ["45%", "0.45"]
+            ]), "IMAGE_WIDTH");
+
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(160);
+        this.setTooltip("Inserts a multicolumn layout with image and text.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['text_left_image_right_multicolumn'] = function(block) {
+    var text = block.getFieldValue('TEXT');
+    var textWidth = block.getFieldValue('TEXT_WIDTH');
+    var imageSrc = block.getFieldValue('SRC');
+    var imageWidth = block.getFieldValue('IMAGE_WIDTH');
+    var code = `
+\\begin{minipage}{${textWidth}\\textwidth}
+\\vspace{-5.2cm}
+${text}
+\\end{minipage}
+\\hspace{0.05\\textwidth}
+\\begin{minipage}{${imageWidth}\\textwidth}
+\\includegraphics[width = \\textwidth]{/data/images/${imageSrc}}
+\\end{minipage}
+`;
+    return code;
+};
+
+Blockly.Blocks['image_left_text_right_multicolumn'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Multicolumn text: Image Left - Text Right");
+
+        this.appendDummyInput()
+            .appendField(new FieldImageButton("Select Image"), "IMAGE_SRC");
+
+        this.appendDummyInput()
+            .appendField("Image width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["10%", "0.1"],
+                ["20%", "0.2"],
+                ["30%", "0.3"],
+                ["40%", "0.4"],
+                ["45%", "0.45"]
+            ]), "IMAGE_WIDTH");
+
+        this.appendDummyInput()
+            .appendField(new FieldRichTextEditor("Type text here..."), "TEXT");
+
+        this.appendDummyInput()
+            .appendField("Text width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["10%", "0.1"],
+                ["20%", "0.2"],
+                ["30%", "0.3"],
+                ["40%", "0.4"],
+                ["45%", "0.45"]
+            ]), "TEXT_WIDTH");
+
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(160);
+        this.setTooltip("Inserts a multicolumn layout with image on the left and text on the right.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['image_left_text_right_multicolumn'] = function(block) {
+    var imageSrc = block.getFieldValue('SRC');
+    var imageWidth = block.getFieldValue('IMAGE_WIDTH');
+    var text = block.getFieldValue('TEXT');
+    var textWidth = block.getFieldValue('TEXT_WIDTH');
+    var code = `
+\\begin{minipage}{${imageWidth}\\textwidth}
+\\includegraphics[width=\\textwidth]{/data/images/${imageSrc}}
+\\end{minipage}
+\\hspace{0.05\\textwidth}
+\\begin{minipage}{${textWidth}\\textwidth}
+\\vspace{-5.2cm}
+${text}
+\\end{minipage}
+`;
+    return code;
+};
+
+Blockly.Blocks['text_left_text_right_multicolumn'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Multicolumn text: Text Left - Text Right");
+
+        this.appendDummyInput()
+            .appendField(new FieldRichTextEditor("Type left text here..."), "LEFT_TEXT");
+
+        this.appendDummyInput()
+            .appendField("Left text width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["10%", "0.1"],
+                ["20%", "0.2"],
+                ["30%", "0.3"],
+                ["40%", "0.4"],
+                ["45%", "0.45"]
+            ]), "LEFT_TEXT_WIDTH");
+
+        this.appendDummyInput()
+            .appendField(new FieldRichTextEditor("Type right text here..."), "RIGHT_TEXT");
+
+        this.appendDummyInput()
+            .appendField("Right text width:")
+            .appendField(new Blockly.FieldDropdown([
+                ["10%", "0.1"],
+                ["20%", "0.2"],
+                ["30%", "0.3"],
+                ["40%", "0.4"],
+                ["45%", "0.45"]
+            ]), "RIGHT_TEXT_WIDTH");
+
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(160);
+        this.setTooltip("Inserts a multicolumn layout with text on both the left and the right.");
+        this.setHelpUrl("");
+    }
+};
+
+Blockly.JavaScript['text_left_text_right_multicolumn'] = function(block) {
+    var leftText = block.getFieldValue('LEFT_TEXT');
+    var leftTextWidth = block.getFieldValue('LEFT_TEXT_WIDTH');
+    var rightText = block.getFieldValue('RIGHT_TEXT');
+    var rightTextWidth = block.getFieldValue('RIGHT_TEXT_WIDTH');
+    var code = `
+\\begin{minipage}{${leftTextWidth}\\textwidth}
+${leftText}
+\\end{minipage}
+\\hspace{0.05\\textwidth}
+\\begin{minipage}{${rightTextWidth}\\textwidth}
+${rightText}
+\\end{minipage}
+`;
+    return code;
 };
 
 Blockly.Blocks['latex_href'] = {
@@ -272,4 +379,5 @@ Blockly.JavaScript['latex_href'] = function(block) {
     var code = `\\href{${url}}{${text}}\n`;
     return code;
 };
+
 
