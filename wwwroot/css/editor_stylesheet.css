@@ -181,21 +181,19 @@ iframe.pdfDisplay {
 .chat-input {
     position: absolute;
     bottom: 0;
-    width: calc(100% - 20px);
-    padding: 10px;
+    width: 350px;
+    padding: 5px;
     background: white;
 }
 
 .chat-input input {
-    width: 70%;
-    padding: 5px 10px;
+    width: 100%;
+    padding: 5px;
     margin-right: 5px;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
-
-.chat-input button {
-    padding: 5px 10px;
-}
 
 #imageGallery img {
     width: 100px;
