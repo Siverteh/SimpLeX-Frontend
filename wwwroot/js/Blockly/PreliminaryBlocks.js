@@ -2,7 +2,8 @@ import {globalCitations} from "../Editor/CitationScripts.js";
 
 import {FieldRichTextEditor} from "./TextBlocks.js";
 
-var globalDocType = 'article';
+export var globalDocType = 'article';
+export var globalLanguage = 'english';
 
 Blockly.Blocks['document_start_block'] = {
     init: function() {
@@ -22,6 +23,14 @@ Blockly.Blocks['document_start_block'] = {
                 ["Book", "book"],
                 ["Beamer", "beamer"]
             ]), "DOCTYPE");
+
+        this.appendDummyInput()
+            .appendField("Language")
+            .appendField(new Blockly.FieldDropdown([
+                ["English", "english"],
+                ["Norwegian", "norsk"]
+            ]), "LANGUAGE");
+
 
         this.appendDummyInput()
             .appendField("Paper Size")
@@ -62,6 +71,7 @@ Blockly.JavaScript['document_start_block'] = function(block) {
     globalDocType = block.getFieldValue('DOCTYPE');
     var paperSize = block.getFieldValue('PAPERSIZE');
     var fontSize = block.getFieldValue('FONTSIZE');
+    globalLanguage = block.getFieldValue('LANGUAGE');
 
     var packages = [
         "\\usepackage{amsmath}",
@@ -70,6 +80,7 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage{graphicx}",
         `\\usepackage[${paperSize}, margin=2cm]{geometry}`,
         "\\usepackage[bookmarks=false,hidelinks]{hyperref}",
+        `\\usepackage[${globalLanguage}]{babel}`,
         "\\usepackage{float}",
         "\\usepackage{subcaption}",
         "\\usepackage[backend=biber]{biblatex}",
@@ -147,8 +158,20 @@ Blockly.Blocks['list_of_figures'] = {
 Blockly.JavaScript['list_of_figures'] = function(block) {
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
-    return `\\listoffigures\n\\addcontentsline{toc}{${tocLevel}}{List of Figures}\n${clearPage}\n\\textcolor{white}{.}\n\\thispagestyle{empty}\n\\newpage\n`;
+
+    // Determine the title based on the globalLanguage variable
+    var listTitle;
+    if (globalLanguage === "english") {
+        listTitle = "List of Figures";
+    } else if (globalLanguage === "norsk") {
+        listTitle = "Figurer"; // Assuming "Figurliste" is the correct Norwegian term
+    } else {
+        listTitle = "List of Figures"; // Default to English if language is undefined
+    }
+
+    return `\\listoffigures\n\\addcontentsline{toc}{${tocLevel}}{${listTitle}}\n${clearPage}\n\\textcolor{white}{.}\n\\thispagestyle{empty}\n\\newpage\n`;
 };
+
 
 // List of Tables Block with clear page option
 Blockly.Blocks['list_of_tables'] = {
@@ -171,8 +194,20 @@ Blockly.Blocks['list_of_tables'] = {
 Blockly.JavaScript['list_of_tables'] = function(block) {
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
-    return `\\listoftables\n\\addcontentsline{toc}{${tocLevel}}{List of Tables}\n${clearPage}\n\\textcolor{white}{.}\n\\thispagestyle{empty}\n\\newpage\n`;
+
+    // Determine the title based on the globalLanguage variable
+    var listTitle;
+    if (globalLanguage === "english") {
+        listTitle = "List of Tables";
+    } else if (globalLanguage === "norsk") {
+        listTitle = "Tabeller"; // Assuming "Tabelliste" is the correct Norwegian term
+    } else {
+        listTitle = "List of Tables"; // Default to English if language is undefined
+    }
+
+    return `\\listoftables\n\\addcontentsline{toc}{${tocLevel}}{${listTitle}}\n${clearPage}\n\\textcolor{white}{.}\n\\thispagestyle{empty}\n\\newpage\n`;
 };
+
 
 Blockly.Blocks['abstract_page_block'] = {
     init: function() {
@@ -193,12 +228,17 @@ Blockly.Blocks['abstract_page_block'] = {
 };
 
 Blockly.JavaScript['abstract_page_block'] = function(block) {
-    var abstractText = block.getFieldValue("ABSTRACT_TEXT")
+    var abstractText = Blockly.JavaScript.valueToCode(block, 'ABSTRACT_TEXT', Blockly.JavaScript.ORDER_ATOMIC);
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
-    var code = `\\ifthenelse{\\equal{${globalDocType}}{report}}{\\chapter*{Abstract}}{\\section*{Abstract}}\n${abstractText}\n\\addcontentsline{toc}{${tocLevel}}{Abstract}\n${clearPage}\n`;
+
+    var abstractTitle = globalLanguage === "norsk" ? "Forord" : "Abstract";
+    var tocTitle = globalLanguage === "norsk" ? "Forord" : "Abstract";
+
+    var code = `\\ifthenelse{\\equal{${globalDocType}}{report}}{\\chapter*{${abstractTitle}}}{\\section*{${abstractTitle}}}\n${abstractText}\n\\addcontentsline{toc}{${tocLevel}}{${tocTitle}}\n${clearPage}\n`;
     return code;
 };
+
 
 Blockly.Blocks['acknowledgements_page_block'] = {
     init: function() {
@@ -219,11 +259,16 @@ Blockly.Blocks['acknowledgements_page_block'] = {
 };
 
 Blockly.JavaScript['acknowledgements_page_block'] = function(block) {
-    var abstractText = block.getFieldValue("ACKNOWLEDGEMENTS_TEXT")
+    var ackText = Blockly.JavaScript.valueToCode(block, 'ACKNOWLEDGEMENTS_TEXT', Blockly.JavaScript.ORDER_ATOMIC);
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
-    var code = `\\ifthenelse{\\equal{${globalDocType}}{report}}{\\chapter*{Acknowledgements}}{\\section*{Acknowledgements}}\n${abstractText}\n\\addcontentsline{toc}{${tocLevel}}{Acknowledgements}\n${clearPage}\n`;
+
+    var ackTitle = globalLanguage === "norsk" ? "Annerkjennelser" : "Acknowledgements";
+    var tocAckTitle = globalLanguage === "norsk" ? "Annerkjennelser" : "Acknowledgements";
+
+    var code = `\\ifthenelse{\\equal{${globalDocType}}{report}}{\\chapter*{${ackTitle}}}{\\section*{${ackTitle}}}\n${ackText}\n\\addcontentsline{toc}{${tocLevel}}{${tocAckTitle}}\n${clearPage}\n`;
     return code;
 };
+
 
 
