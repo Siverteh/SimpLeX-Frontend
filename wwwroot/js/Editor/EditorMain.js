@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async function () {  // Note the a
     workspace.addChangeListener(function (event) {
         ensureDocumentStartBlockExists(workspace);
     });
-
+    
     compileLatexContent(workspace);
 
     document.addEventListener('mousemove', throttle(async (event) => {

@@ -68,6 +68,7 @@ export class FieldRichTextEditor extends Blockly.Field {
 
         const icons = Quill.import('ui/icons');
         icons['cite'] = '<i class="fa fa-book"></i>';
+        icons['ref'] = '<i class="fa fa-tag"></i>';
 
         this.quill = new Quill(quillEditorDiv, {
             theme: 'snow',
@@ -75,11 +76,20 @@ export class FieldRichTextEditor extends Blockly.Field {
                 toolbar: {
                     container: [
                         ['bold', 'italic', 'underline'],
-                        ['cite']
+                        ['cite', 'ref']
                     ],
                     handlers: {
                         'cite': () => {
                             $('#citationGalleryModal').modal('show');
+                        },
+                        'ref': () => {
+                            const label = prompt("Enter the label you want to reference:");
+                            if (label) {
+                                const range = this.quill.getSelection();
+                                if (range) {
+                                    this.quill.insertText(range.index, `[Ref: ${label}]`, 'user');
+                                }
+                            }
                         }
                     }
                 },
@@ -122,6 +132,7 @@ export class FieldRichTextEditor extends Blockly.Field {
 
         // Convert human-readable citation tags to LaTeX \cite commands
         html = html.replace(/\[Cite: ([^\]]+)\]/g, '\\cite{$1}');
+        html = html.replace(/\[Ref: ([^\]]+)\]/g, '\\ref{$1}');
 
         return html.trim();
     }
@@ -130,6 +141,7 @@ export class FieldRichTextEditor extends Blockly.Field {
     convertLatexToHtml(latex) {
         // Convert \cite commands to human-readable format immediately for editor display
         latex = latex.replace(/\\cite{([^}]+)}/g, '[Cite: $1]');
+        latex = latex.replace(/\\ref{([^}]+)}/g, '[Ref: $1]');
 
         // Standard LaTeX to HTML formatting
         latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>');
@@ -181,7 +193,7 @@ Blockly.Blocks['regular_text_block'] = {
 Blockly.JavaScript['regular_text_block'] = function(block) {
     var text = block.getFieldValue('TEXT');
     // The text is already in LaTeX format.
-    return text + '\\\\ \\\\ \n';
+    return text + '\n';
 };
 
 Blockly.Blocks['text_left_image_right_multicolumn'] = {

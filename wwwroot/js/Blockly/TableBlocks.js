@@ -127,5 +127,98 @@ Blockly.JavaScript['latex_table'] = function(block) {
     return code;
 };
 
+Blockly.Blocks['latex_matrix'] = {
+    init: function() {
+        this.appendDummyInput()
+            .appendField("Create Matrix");
+        this.appendDummyInput()
+            .appendField("Rows")
+            .appendField(new Blockly.FieldNumber(2, 1, 10, 1), "ROWS");
+        this.appendDummyInput()
+            .appendField("Columns")
+            .appendField(new Blockly.FieldNumber(2, 1, 10, 1), "COLS");
+        this.appendDummyInput()
+            .appendField("Brackets")
+            .appendField(new Blockly.FieldDropdown([
+                ["Plain", "matrix"],
+                ["Parentheses (round brackets)", "pmatrix"],
+                ["Brackets (square brackets)", "bmatrix"],
+                ["Braces (curly brackets)", "Bmatrix"],
+                ["Pipes", "vmatrix"],
+                ["Double pipes", "Vmatrix"]
+            ]), "BRACKETS");
+
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(75);
+        this.setTooltip("");
+        this.setHelpUrl("");
+
+        this.updateShape_();
+
+        this.setOnChange(function(event) {
+            if (event.blockId === this.id && (event.name === 'ROWS' || event.name === 'COLS')) {
+                Blockly.Events.disable();
+                this.updateShape_();
+                Blockly.Events.enable();
+                this.render();
+            }
+        });
+    },
+
+    updateShape_: function() {
+        let i = this.inputList.length - 1;
+        while (i >= 0 && this.inputList[i].name.startsWith('ROW')) {
+            this.removeInput(this.inputList[i].name);
+            i--;
+        }
+
+        const rows = this.getFieldValue('ROWS');
+        const cols = this.getFieldValue('COLS');
+        for (let r = 0; r < rows; r++) {
+            let rowInput = this.appendDummyInput('ROW' + r);
+            for (let c = 0; c < cols; c++) {
+                rowInput.appendField(new Blockly.FieldTextInput("0"), 'CELL' + r + '_' + c);
+            }
+        }
+
+        if (this.workspace) {
+            this.initSvg();
+            this.render();
+        }
+    },
+
+    mutationToDom: function() {
+        var container = document.createElement('mutation');
+        container.setAttribute('rows', this.getFieldValue('ROWS'));
+        container.setAttribute('cols', this.getFieldValue('COLS'));
+        return container;
+    },
+
+    domToMutation: function(xmlElement) {
+        var rows = parseInt(xmlElement.getAttribute('rows'), 10);
+        var cols = parseInt(xmlElement.getAttribute('cols'), 10);
+        this.getField('ROWS').setValue(rows);
+        this.getField('COLS').setValue(cols);
+        this.updateShape_();
+    },
+};
+
+Blockly.JavaScript['latex_matrix'] = function(block) {
+    const rows = parseInt(block.getFieldValue('ROWS'));
+    const cols = parseInt(block.getFieldValue('COLS'));
+    const matrixType = block.getFieldValue('BRACKETS');
+
+    let code = `\\begin{${matrixType}}\n`;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            code += block.getFieldValue('CELL' + r + '_' + c) + (c < cols - 1 ? ' & ' : '');
+        }
+        code += '\\\\\n'; // End the row
+    }
+    code += `\\end{${matrixType}}\n`;
+
+    return code;
+};
 
 
