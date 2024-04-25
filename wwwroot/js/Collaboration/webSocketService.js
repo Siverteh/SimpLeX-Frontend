@@ -14,7 +14,7 @@ class WebSocketService {
         this.lastUserName = userName;   // Save last userName
         this.disconnect(); // Ensure any existing connection is closed 
 
-        const url = `ws://127.0.0.1:34543/ws/${projectId}?userName=${encodeURIComponent(userName)}`;
+        const url = `ws://127.0.0.1:41279/ws/${projectId}?userName=${encodeURIComponent(userName)}`;
         this.socket = new WebSocket(url);
 
         // Setup a connection timeout
