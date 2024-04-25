@@ -193,7 +193,7 @@ Blockly.Blocks['regular_text_block'] = {
 Blockly.JavaScript['regular_text_block'] = function(block) {
     var text = block.getFieldValue('TEXT');
     // The text is already in LaTeX format.
-    return text + '\n';
+    return text + '\\\\ \\\\ \n';
 };
 
 Blockly.Blocks['text_left_image_right_multicolumn'] = {

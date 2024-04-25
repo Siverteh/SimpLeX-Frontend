@@ -20,7 +20,15 @@
 <body>
 <div class="editor-header">
     <div class="left-buttons">
-        <button class="menu-btn">Menu</button>
+        <div class="dropdown">
+            <button class="menu-btn">Menu</button>
+            <div class="dropdown-content" style="display:none;">
+                <button onclick="renameProject()">Rename Project</button>
+                <button onclick="exportAsPDF()">Export as PDF</button>
+                <button onclick="exportAsTEX()">Export as TEX</button>
+                <button onclick="saveAsTemplate()">Save as Custom Template</button>
+                </div>
+            </div>
         <button class="home-btn" onclick="location.href='@Url.Action("GoHome", "Editor")'">Home</button>
         <button class="btn btn-primary" data-toggle="modal" data-target="#imageGalleryModal">Image Gallery</button>
         <button class="btn btn-secondary" data-toggle="modal" data-target="#citationGalleryModal">Citations</button>
@@ -234,6 +242,7 @@ function toggleCollaboratorsModal() {
 
 <!-- Editor logic -->
 <script type="module" src="/js/Editor/EditorMain.js"></script>
+<script src="/js/Editor/MenuButtonScripts.js"></script>
 <script src="/js/Editor/ImageScripts.js"></script>
 <script type="module" src="/js/Editor/CitationScripts.js"></script>
 <script src="/js/Editor/ShareButton.js"></script>
@@ -245,7 +254,7 @@ function toggleCollaboratorsModal() {
 <script type="module" src="/js/Blockly/FrontPageBlocks.js"></script>
 <script src="/js/Blockly/StructureBlocks.js"></script>
 <script type="module" src="/js/Blockly/TextBlocks.js"></script>
-<script src="/js/Blockly/ListBlocks.js"></script>
+<script type="module" src="/js/Blockly/ListBlocks.js"></script>
 <script type="module" src="/js/Blockly/ListingAndCodeBlocks.js"></script>
 <script src="/js/Blockly/TableBlocks.js"></script>
 

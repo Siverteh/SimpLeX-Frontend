@@ -105,7 +105,7 @@ namespace SimpLeX_Frontend.Controllers
 
             var request = new HttpRequestMessage(HttpMethod.Post, projectCreationUrl)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(new { Title = model.Title }), Encoding.UTF8, "application/json")
+                Content = new StringContent(JsonConvert.SerializeObject(new { Title = model.Title, WorkspaceState = model.WorkspaceState }), Encoding.UTF8, "application/json")
             };
 
             // Attach the JWT token in Authorization header

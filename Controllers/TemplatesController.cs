@@ -31,7 +31,7 @@ namespace SimpLeX_Frontend.Controllers
             }
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.GetAsync("http://simplex-backend-service/api/Templates/GetTemplates");
+            var response = await httpClient.GetAsync("http://simplex-backend-service:8080/api/Templates/GetTemplates");
 
             if (response.IsSuccessStatusCode)
             {
@@ -67,7 +67,7 @@ namespace SimpLeX_Frontend.Controllers
             var content = new StringContent(JsonConvert.SerializeObject(template), System.Text.Encoding.UTF8, "application/json");
 
             _logger.LogInformation($"Forwarding template to backend: {content.ReadAsStringAsync().Result}");
-            var response = await httpClient.PostAsync("http://simplex-backend-service/api/Templates/AddTemplate", content);
+            var response = await httpClient.PostAsync("http://simplex-backend-service:8080/api/Templates/AddTemplate", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -100,7 +100,7 @@ namespace SimpLeX_Frontend.Controllers
             }
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.DeleteAsync($"http://simplex-backend-service/api/Templates/DeleteTemplate/{Uri.EscapeDataString(templateId)}");
+            var response = await httpClient.DeleteAsync($"http://simplex-backend-service:8080/api/Templates/DeleteTemplate/{Uri.EscapeDataString(templateId)}");
 
             if (response.IsSuccessStatusCode)
             {

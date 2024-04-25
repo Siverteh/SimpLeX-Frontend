@@ -141,3 +141,69 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const browseBtn = document.getElementById('browseTemplates');
+    const templateModal = document.getElementById('templateSelectionModal');
+    const closeModal = templateModal.querySelector('.close');
+
+    // Event listener to open the modal and load templates
+    browseBtn.addEventListener('click', function () {
+        fetchTemplates();
+        templateModal.style.display = 'flex';
+    });
+
+    // Close the modal
+    closeModal.addEventListener('click', function () {
+        templateModal.style.display = 'none';
+    });
+
+    function fetchTemplates() {
+        fetch('/Templates/GetTemplates', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Check if templates are wrapped in a `$values` property or similar
+                    const templatesArray = data.templates.$values || data.templates;
+                    if (Array.isArray(templatesArray)) {
+                        populateTemplates(templatesArray);
+                    } else {
+                        console.error('Expected templates to be an array, received:', templatesArray);
+                    }
+                }
+                else {
+                    console.error('Failed to load templates');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching templates:', error);
+            });
+    }
+
+    function populateTemplates(templates) {
+        const gallery = document.querySelector('.template-gallery');
+        gallery.innerHTML = ''; // Clear existing templates
+        templates.forEach(template => {
+            const div = document.createElement('div');
+            div.className = 'template-item';
+            div.innerHTML = `
+            <img src="http://10.225.149.19:31958/images/${template.imagePath}" alt="${template.templateName}">
+            <p>${template.templateName}</p>
+            `;
+            div.addEventListener('click', () => {
+                selectTemplate(template.templateName, template.xmlContent);
+                templateModal.style.display = 'none'; // Close modal on selection
+            });
+            gallery.appendChild(div);
+        });
+    }
+
+    function selectTemplate(templateName, xmlContent) {
+        const currentTemplateDisplay = document.querySelector('.current-template');
+        currentTemplateDisplay.textContent = `Current template: ${templateName}`;
+
+        const workspaceStateInput = document.getElementById('templateXMLContent');
+        workspaceStateInput.value = xmlContent;
+    }
+});
+
+
