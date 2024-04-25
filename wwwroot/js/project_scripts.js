@@ -145,11 +145,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const browseBtn = document.getElementById('browseTemplates');
     const templateModal = document.getElementById('templateSelectionModal');
     const closeModal = templateModal.querySelector('.close');
+    const globalTemplatesBtn = document.getElementById('globalTemplatesBtn');
+    const customTemplatesBtn = document.getElementById('customTemplatesBtn');
 
-    // Event listener to open the modal and load templates
+    // Toggle class function
+    function toggleActive(btn) {
+        globalTemplatesBtn.classList.remove('active');
+        customTemplatesBtn.classList.remove('active');
+        btn.classList.add('active');
+    }
+
+    // Initial fetch for global templates
     browseBtn.addEventListener('click', function () {
-        fetchTemplates();
+        fetchTemplates(false);  // Assume global templates are not custom
         templateModal.style.display = 'flex';
+        toggleActive(globalTemplatesBtn);
+    });
+
+    // Fetch global templates
+    globalTemplatesBtn.addEventListener('click', function() {
+        fetchTemplates(false);
+        toggleActive(globalTemplatesBtn);
+    });
+
+    // Fetch custom templates
+    customTemplatesBtn.addEventListener('click', function() {
+        fetchTemplates(true);
+        toggleActive(customTemplatesBtn);
     });
 
     // Close the modal
@@ -157,21 +179,31 @@ document.addEventListener('DOMContentLoaded', function () {
         templateModal.style.display = 'none';
     });
 
-    function fetchTemplates() {
-        fetch('/Templates/GetTemplates', { method: 'GET' })
+    async function fetchTemplates(isCustom) {
+        const response = await fetch('/Editor/GetUserInfo');
+        if (!response.ok) {
+            console.error('Failed to fetch user info');
+            return;
+        }
+        const { userId, userName } = await response.json();
+
+        let url = `/Templates/GetTemplates?isCustom=${isCustom}`;
+        if (isCustom && userId) {
+            url += `&userId=${userId}`;  // Append user ID to the URL for custom templates
+        }
+
+        fetch(url, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Check if templates are wrapped in a `$values` property or similar
                     const templatesArray = data.templates.$values || data.templates;
                     if (Array.isArray(templatesArray)) {
                         populateTemplates(templatesArray);
                     } else {
                         console.error('Expected templates to be an array, received:', templatesArray);
                     }
-                }
-                else {
-                    console.error('Failed to load templates');
+                } else {
+                    console.error('Failed to load templates:', data.message);
                 }
             })
             .catch(error => {
@@ -182,28 +214,34 @@ document.addEventListener('DOMContentLoaded', function () {
     function populateTemplates(templates) {
         const gallery = document.querySelector('.template-gallery');
         gallery.innerHTML = ''; // Clear existing templates
+
         templates.forEach(template => {
-            const div = document.createElement('div');
-            div.className = 'template-item';
-            div.innerHTML = `
-            <img src="http://10.225.149.19:31958/images/${template.imagePath}" alt="${template.templateName}">
-            <p>${template.templateName}</p>
-            `;
-            div.addEventListener('click', () => {
+            const templateCard = document.createElement('div');
+            templateCard.className = 'template-item';
+
+            // Build the inner HTML based on whether an image is available
+            templateCard.innerHTML = template.imagePath ?
+                `<img src="http://10.225.149.19:31958/images/${template.imagePath}" alt="${template.templateName}">` +
+                `<p>${template.templateName}</p>` :
+                `<div style="padding: 20px; height: 100%; display: flex; align-items: center; justify-content: center;"><p>${template.templateName}</p></div>`; // Center text in a flex container when no image
+
+            templateCard.addEventListener('click', () => {
                 selectTemplate(template.templateName, template.xmlContent);
-                templateModal.style.display = 'none'; // Close modal on selection
+                document.getElementById('templateSelectionModal').style.display = 'none'; // Close modal on selection
             });
-            gallery.appendChild(div);
+
+            gallery.appendChild(templateCard);
         });
     }
+
 
     function selectTemplate(templateName, xmlContent) {
         const currentTemplateDisplay = document.querySelector('.current-template');
         currentTemplateDisplay.textContent = `Current template: ${templateName}`;
-
         const workspaceStateInput = document.getElementById('templateXMLContent');
         workspaceStateInput.value = xmlContent;
     }
 });
+
 
 

@@ -321,6 +321,77 @@ h2 {
     width: auto; /* Auto width for buttons in delete modal */
 }
 
+#createProjectModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+#createProjectModal .modal-content {
+    background-color: #E0E0E0;
+    padding: 20px; /* Adequate padding */
+    border: 8px solid #1B222C;
+    width: 30%; /* Consistent moderate width */
+    height: auto; /* Height adjusts to content */
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#createProjectModal .form-group {
+    width: 100%;
+    margin-bottom: 25px; /* Increased margin for better spacing */
+}
+
+#createProjectModal .modal-input, #createProjectModal .browse-templates-btn {
+    width: 50%;
+    padding: 8px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#createProjectModal .browse-templates-btn {
+    background-color: #007BFF; /* Distinct color for differentiation */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-weight: bold;
+    width: 52%; /* Matching width with inputs */
+}
+
+#createProjectModal .create-project-btn {
+    background-color: #28a745; /* Highlight color for primary action */
+    color: white;
+    padding: 15px 30px; /* Larger button for emphasis */
+    margin-top: 20px; /* Adequate space from last input */
+    border-radius: 8px; /* Soft rounded corners */
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 60%; /* Slightly larger width to emphasize importance */
+    font-size: 18px; /* Larger font size for visibility */
+}
+
+#createProjectModal .create-project-btn:hover {
+    background-color: #218838; /* Slightly darker on hover for feedback */
+}
+
+#createProjectModal .current-template {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+
 #templateSelectionModal.modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -362,36 +433,62 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
-    overflow-y: auto; /* Allows scrolling if there are many templates */
+    overflow-y: auto;
     margin-top: 20px;
+    width: 100%; /* Ensures gallery uses all available space */
 }
 
 #templateSelectionModal .template-item {
-    width: 30%; /* Makes three items fit in a row */
-    text-align: center;
-    margin-bottom: 20px; /* Space between rows */
+    width: 30%;
+    margin: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    background: #FFFFFF;
+    transition: transform 0.2s;
     cursor: pointer;
+    display: flex;
+    flex-direction: column; /* Makes sure the text is always at the bottom */
+    align-items: center; /* Center items horizontally */
+}
+
+#templateSelectionModal .template-item:hover {
+    transform: translateY(-5px); /* subtle hover effect */
 }
 
 #templateSelectionModal .template-item img {
-    width: 100%; /* Makes the image fit its container */
-    border-radius: 10px; /* Optional: rounds the corners of the template images */
+    width: 100%;
+    height: auto; /* Adjust height automatically */
+    object-fit: contain; /* Ensure the entire image is visible */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 #templateSelectionModal .template-item p {
-    margin-top: 5px; /* Spacing between image and text */
+    padding: 15px;
+    margin: 0;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    width: 100%; /* Ensures text aligns with the image width */
 }
 
 .toggle-btn {
     padding: 10px 20px;
     border: none;
-    background-color: #ccc;
+    background-color: #bbb;
     cursor: pointer;
     margin: 0 5px;
     border-radius: 5px;
+    color: white;
+}
+.toggle-btn:hover {
+    background-color: #aaa;
+}
+.toggle-btn.active {
+    background-color: #4CAF50;
+    color: white;
 }
 
-.toggle-btn.active {
-    background-color: #007BFF;
-    color: white;
+.toggle-btn.active:hover {
+    background-color: #45a049;
 }

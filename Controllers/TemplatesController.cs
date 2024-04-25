@@ -21,7 +21,7 @@ namespace SimpLeX_Frontend.Controllers
 
         // GET: Fetch all templates
         [HttpGet]
-        public async Task<IActionResult> GetTemplates()
+        public async Task<IActionResult> GetTemplates(bool isCustom, string userId = null)
         {
             var httpClient = _httpClientFactory.CreateClient("BackendService");
             var token = Request.Cookies["JWTToken"];
@@ -31,7 +31,10 @@ namespace SimpLeX_Frontend.Controllers
             }
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            var response = await httpClient.GetAsync("http://simplex-backend-service:8080/api/Templates/GetTemplates");
+    
+            // Build the query string based on whether templates are custom and whether a user ID is provided
+            var queryString = $"isCustom={isCustom}" + (isCustom && !string.IsNullOrEmpty(userId) ? $"&userId={userId}" : string.Empty);
+            var response = await httpClient.GetAsync($"http://simplex-backend-service:8080/api/Templates/GetTemplates?{queryString}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -43,6 +46,7 @@ namespace SimpLeX_Frontend.Controllers
                 return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
             }
         }
+
 
         // POST: Add a new template
         [HttpPost]
