@@ -6,7 +6,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #1B222C;
+    background-color: #244855;
 }
 
 .login-container {
@@ -14,7 +14,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #E0E0E0;
+    background-color: #FBE9D0;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
@@ -52,8 +52,20 @@
     width: 95%;
     margin-left: auto;
     margin-right: auto;
-    background-color: #E0E0E0;
+    background-color: #ffffff;
 }
+
+.login-input:-webkit-autofill,
+.login-textarea:-webkit-autofill {
+    box-shadow: 0 0 0px 1000px #ffffff inset; /* Override autofill color */
+    -webkit-text-fill-color: #333; /* Ensures the text color stays the same */
+}
+
+.login-input:-webkit-autofill:focus,
+.login-textarea:-webkit-autofill:focus {
+    transition: background-color 5000s ease-in-out 0s; /* Delay the transition to preserve color on focus */
+}
+
 
 .login-button, .login-submit {
     display: block;
@@ -61,7 +73,7 @@
     padding: 15px 10px;
     border: none;
     border-radius: 50px;
-    background-color: #00A811;
+    background-color: #E64833;
     color: #fff;
     cursor: pointer;
     margin: 0 auto;
@@ -69,13 +81,13 @@
 }
 
 .login-button:hover, .login-submit:hover {
-    background-color: #246B1E;
+    background-color: #BA3A2A;
 }
 
 .login-link {
     text-align: center;
     display: block;
-    color: #3265B2;
+    color: #874F41;
     margin: 10px;
 }
 
@@ -102,7 +114,7 @@
 
 /* Google Button Styles */
 .login-google {
-    background-color: #4285F4; /* Google Blue */
+    background-color: #FBE9D0; /* Google Blue */
     color: white;
     padding: 10px 15px;
     border: none;
@@ -181,7 +193,7 @@
 .login-or-text {
     color: #666; /* Darker grey text */
     font-weight: bold;
-    background-color: #E0E0E0; /* Background color similar to the form's background */
+    background-color: #FBE9D0; /* Background color similar to the form's background */
     padding: 0 10px; /* Padding to avoid overlapping with the line */
 }
 

@@ -1,4 +1,5 @@
 import {compileConnectedBlocks} from "./BlocklyScripts.js";
+import {globalLanguage, globalDocType} from "../Blockly/PreliminaryBlocks.js";
 
 function displayPDF(pdfData) {
     var byteCharacters = atob(pdfData);
@@ -97,10 +98,25 @@ function requestCurrentPage() {
     }
 }
 
+function generateBibliographyTitle() {
+    if (globalDocType === "report" && globalLanguage === "english") {
+        return "Bibliography";
+    } else if (globalDocType === "article" && globalLanguage === "english") {
+        return "References";
+    } else if (globalDocType === "report" && globalLanguage === "norsk") {
+        return "Bibliografi";
+    } else if (globalDocType === "article" && globalLanguage === "norsk") {
+        return "Kilder";
+    }
+    return "Bibliography"; // Default title if no condition matches
+}
+
+
 export function compileLatexContent(workspace) {
     requestCurrentPage()
     const projectId = document.getElementById('projectId').value;
-    const latexContent = compileConnectedBlocks(workspace) + '\\newpage\n\\printbibliography\n\\end{document}';
+    const bibliographyTitle = generateBibliographyTitle();
+    const latexContent = compileConnectedBlocks(workspace) + `\\newpage\\printbibliography[heading=bibintoc, title={${bibliographyTitle}}]\\end{document}`;
 
     var formData = new FormData();
     formData.append('projectId', projectId);
@@ -144,7 +160,8 @@ function updateProjectTitle(wordCount) {
 
 export function autoSaveLatexContent(workspace) {
     const projectId = document.getElementById('projectId').value;
-    const latexContent = compileConnectedBlocks(workspace) + '\\newpage\n\\printbibliography\n\\end{document}';
+    const bibliographyTitle = generateBibliographyTitle();
+    const latexContent = compileConnectedBlocks(workspace) + `\\newpage\\printbibliography[heading=bibintoc, title={${bibliographyTitle}}]\\end{document}`;
     const workspaceState = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
     
     var formData = new FormData();

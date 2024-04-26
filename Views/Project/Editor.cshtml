@@ -23,23 +23,31 @@
 <body>
 <div class="editor-header">
     <div class="left-buttons">
-        <button class="menu-btn">Menu</button>
-        <button class="home-btn" onclick="location.href='@Url.Action("GoHome", "Editor")'">Home</button>
-        <button class="btn btn-primary" data-toggle="modal" data-target="#imageGalleryModal">Image Gallery</button>
-        <button class="btn btn-secondary" data-toggle="modal" data-target="#citationGalleryModal">Citations</button>
+        <div id="menuDropdown" class="dropdown">
+            <button id="menuButton" class="menu-btn">Menu</button>
+            <div id="menuDropdownContent" class="dropdown-content">
+                <button id="renameProjectBtn" onclick="renameProject()">Rename Project</button>
+                <button id="exportPDFBtn" onclick="exportAsPDF()">Export as PDF</button>
+                <button id="exportTEXBtn" onclick="exportAsTEX()">Export as TEX</button>
+                <button id="saveTemplateBtn" onclick="saveAsTemplate()">Save as Custom Template</button>
+            </div>
+        </div>
+        <button id="homeButton" class="home-btn" onclick="location.href='@Url.Action("GoHome", "Editor")'">Home</button>
+        <button id="imageGalleryButton" class="btn btn-primary" data-toggle="modal" data-target="#imageGalleryModal">Image Gallery</button>
+        <button id="citationsButton" class="btn btn-secondary" data-toggle="modal" data-target="#citationGalleryModal">Citations</button>
     </div>
     <div class="center-title">
-        <h1 class="project-title">@ViewData["Title"]</h1>
+        <h1 id="projectTitle" class="project-title">@ViewData["Title"]</h1>
         <div class="additional-info">
             <span id="wordCount" class="word-count">WORDS: 0</span>
-            <span class="collaborators-count" onclick="toggleCollaboratorsModal();">
+            <span id="collaboratorsCount" class="collaborators-count" onclick="toggleCollaboratorsModal();">
                 <i class="fas fa-users"></i> <span id="activeCollaborators">0</span>
             </span>
         </div>
     </div>
     <div class="right-buttons">
-        <button class="share-btn">Share</button>
-        <button class="chat-btn">Chat</button>
+        <button id="shareButton" class="share-btn">Share</button>
+        <button id="chatButton" class="chat-btn">Chat</button>
     </div>
 </div>
 
@@ -156,58 +164,87 @@
 
     <div id="quill-editor"></div>
     <div id="blocklyDiv"></div>
-    <xml id="toolbox">
-        <category name="Front pages" colour="0">
-            <block type="uia_thesis_front_page"></block>
-            <block type="uia_standard_report_front_page"></block>
-            <block type="uia_ikt_report_front_page"></block>
-            <block type="generic_report_front_page"></block>
-        </category>    
-        <category name="Preliminaries" colour="30">
-            <block type="acknowledgements_page_block"></block>
-            <block type="abstract_page_block"></block>
-            <block type="table_of_contents"></block>
-            <block type="list_of_figures"></block>
-            <block type="list_of_tables"></block>
-        </category>
-        <category name="Document Structure" colour="230">
-            <block type="chapter"></block>
-            <block type="section"></block>
-            <block type="subsection"></block>
-            <block type="subsubsection"></block>
-            <block type="new_page"></block>
-        </category>
-        <category name="Text" colour="160">
-            <block type="regular_text_block"></block>
-            <block type="text_left_text_right_multicolumn"></block>
-            <block type="text_left_image_right_multicolumn"></block>
-            <block type="image_left_text_right_multicolumn"></block>
-            <block type="latex_href"></block>
-        </category>
-        <category name="Images" colour="40">
-            <block type="latex_standard_image"></block>
-            <block type="latex_simple_image"></block>
-            <block type="latex_detailed_image"></block>
-        </category>
-        <category name="Tables and Matrices" colour="75">
-            <block type="latex_table"></block>
-        </category>
-        <category name="Lists" colour="260">
-            <block type="latex_item"></block>
-            <block type="latex_itemize_list"></block>
-            <block type="latex_enumerate_list"></block>
-            <block type="latex_alph_list"></block>
-            <block type="latex_description_list"></block>
-            <block type="latex_description_item"></block>
-        </category>
-        <category name="Listings and Code" colour="300">
-            <block type="latex_code_listing"></block>
-            <block type="latex_minted_code"></block>
-        </category>
-    </xml>
+        <!-- Toolbox Definition -->
+        <xml
+          id="toolbox"
+          style="display: none">
+          <toolboxlabel name="Custom Toolbox" colour="darkslategrey"></toolboxlabel>
+          <category
+              css-icon="fas fa-file-alt"
+              name="Frontpage"
+              colour="0">
+              <block type="uia_thesis_front_page"></block>
+              <block type="uia_standard_report_front_page"></block>
+              <block type="uia_ikt_report_front_page"></block>
+              <block type="generic_report_front_page"></block>
+          </category>
+          <category
+              css-icon="fas fa-file-signature"
+              name="Preliminaries"
+              colour="30">
+              <block type="acknowledgements_page_block"></block>
+              <block type="abstract_page_block"></block>
+              <block type="table_of_contents"></block>
+              <block type="list_of_figures"></block>
+              <block type="list_of_tables"></block>        
+          </category>
+          <category
+              css-icon="fas fa-sitemap"
+              name="Structure"
+              colour="230">
+              <block type="chapter"></block>
+              <block type="section"></block>
+              <block type="subsection"></block>
+              <block type="subsubsection"></block>
+              <block type="new_page"></block>
+          </category>
+          <category
+              css-icon="fas fa-font"
+              name="Text"
+              colour="160">
+              <block type="regular_text_block"></block>
+              <block type="text_left_text_right_multicolumn"></block>
+              <block type="text_left_image_right_multicolumn"></block>
+              <block type="image_left_text_right_multicolumn"></block>
+              <block type="latex_href"></block>
+          </category>
+          <category
+              css-icon="fas fa-images"
+              name="Images"
+              colour="160">
+              <block type="latex_standard_image"></block>
+              <block type="latex_simple_image"></block>
+              <block type="latex_detailed_image"></block>
+          </category>
+          <category
+              css-icon="fas fa-table"
+              name="Tables"
+              colour="75">
+              <block type="latex_table"></block>
+              <block type="latex_matrix"></block>
+          </category>
+          <category
+              css-icon="fas fa-list-ul"
+              name="Lists"
+              colour="260">
+              <block type="latex_item"></block>
+              <block type="latex_itemize_list"></block>
+              <block type="latex_enumerate_list"></block>
+              <block type="latex_alph_list"></block>
+              <block type="latex_description_list"></block>
+              <block type="latex_description_item"></block>
+          </category>
+          <category
+              css-icon="fas fa-code"
+              name="Code"
+              colour="300">
+              <block type="latex_code_listing"></block>
+              <block type="latex_minted_code"></block>
+          </category>
+        </xml>
     <div class="pdf-viewer" id="pdf-viewer">
         <!-- Display PDF if available -->
-        <iframe class="pdfDisplay" id="pdfDisplay" style="width:100%;height:100%;" frameborder="0"></iframe>
+        <iframe class="pdfDisplay" id="pdfDisplay"src="/pdfjs/web/viewer.html?file=%2Fimages%2Floading.pdf"style="width:100%;height:100%;" frameborder="0"></iframe>
     </div>
 
     <!-- Chat Window Container -->
@@ -253,9 +290,21 @@ function toggleCollaboratorsModal() {
 <script type="module" src="/js/Blockly/FrontPageBlocks.js"></script>
 <script src="/js/Blockly/StructureBlocks.js"></script>
 <script type="module" src="/js/Blockly/TextBlocks.js"></script>
-<script src="/js/Blockly/ListBlocks.js"></script>
+<script type="module" src="/js/Blockly/ListBlocks.js"></script>
 <script type="module" src="/js/Blockly/ListingAndCodeBlocks.js"></script>
 <script src="/js/Blockly/TableBlocks.js"></script>
+<script src="js/Blockly/custom_category.js"></script>
+<script src="js/Blockly/toolbox_label.js"></script>
+
+<!-- Editor logic -->
+<script type="module" src="/js/Editor/EditorMain.js"></script>
+<script src="/js/Editor/MenuButtonScripts.js"></script>
+<script src="/js/Editor/ImageScripts.js"></script>
+<script type="module" src="/js/Editor/CitationScripts.js"></script>
+<script src="/js/Editor/ShareButton.js"></script>
+<script type="module" src="/js/Editor/ChatLogic.js"></script>
+
+
 
 
 

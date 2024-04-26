@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', async function () {  // Note the a
     if (workspaceState && workspaceState.trim() !== '') {
         try {
             const xml = Blockly.utils.xml.textToDom(workspaceState);
+            const xmlString = new XMLSerializer().serializeToString(xml);
+            console.log(xmlString);
             Blockly.Xml.domToWorkspace(xml, workspace);
         } catch (e) {
             console.error('Error parsing workspace state:', e);
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async function () {  // Note the a
     workspace.addChangeListener(function (event) {
         ensureDocumentStartBlockExists(workspace);
     });
-
+    
     compileLatexContent(workspace);
 
     document.addEventListener('mousemove', throttle(async (event) => {

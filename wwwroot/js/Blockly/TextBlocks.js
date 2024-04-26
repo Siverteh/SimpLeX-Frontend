@@ -75,6 +75,7 @@ export class FieldRichTextEditor extends Blockly.Field {
 
         const icons = Quill.import('ui/icons');
         icons['cite'] = '<i class="fa fa-book"></i>';
+        icons['ref'] = '<i class="fa fa-tag"></i>';
 
         const quillOptions = {
             theme: 'snow',
@@ -82,11 +83,22 @@ export class FieldRichTextEditor extends Blockly.Field {
                 formula: true,
                 toolbar: {
                     container: [
-                        ['bold', 'italic', 'underline'], ['formula'], ['cite']
+                        ['bold', 'italic', 'underline'],
+                        ['cite', 'ref'],
+                        ['formula']
                     ],
                     handlers: {
                         'cite': () => {
                             $('#citationGalleryModal').modal('show');
+                        },
+                        'ref': () => {
+                            const label = prompt("Enter the label you want to reference:");
+                            if (label) {
+                                const range = this.quill.getSelection();
+                                if (range) {
+                                    this.quill.insertText(range.index, `[Ref: ${label}]`, 'user');
+                                }
+                            }
                         }
                     }
                 },
@@ -157,6 +169,7 @@ export class FieldRichTextEditor extends Blockly.Field {
 
         // Convert human-readable citation tags to LaTeX \cite commands
         html = html.replace(/\[Cite: ([^\]]+)\]/g, '\\cite{$1}');
+        html = html.replace(/\[Ref: ([^\]]+)\]/g, '\\ref{$1}');
 
         return html.trim();
     }
@@ -166,6 +179,7 @@ export class FieldRichTextEditor extends Blockly.Field {
     convertLatexToHtml(latex) {
         // Convert \cite commands to human-readable format for editor display
         latex = latex.replace(/\\cite{([^}]+)}/g, '[Cite: $1]');
+        latex = latex.replace(/\\ref{([^}]+)}/g, '[Ref: $1]');
 
         // Standard LaTeX to HTML formatting
         latex = latex.replace(/\\textbf{(.*?)}/g, '<strong>$1</strong>');

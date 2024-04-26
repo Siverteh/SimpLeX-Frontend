@@ -46,16 +46,30 @@
                     <button type="button" id="browseTemplates" class="browse-templates-btn">Browse Templates</button>
                     <p class="current-template">Current template: None</p>
                 </div>
-    
-                <div class="form-group">
-                    <label for="projectLabel" class="modal-label">Label</label>
-                    <input type="text" id="projectLabel" name="label" class="modal-input" placeholder="Choose label">
-                </div>
+                
+                <input type="hidden" id="templateXMLContent" name="WorkspaceState">
           
                 <button type="submit" class="create-project-btn">Create Project</button>
             </form>
         </div>
     </div>
+    
+    <!-- Template Selection Modal -->
+    <div id="templateSelectionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Select a Template</h2>
+            <div class="template-switch">
+                <button id="globalTemplatesBtn" class="toggle-btn active">Global Templates</button>
+                <button id="customTemplatesBtn" class="toggle-btn">Custom Templates</button>
+            </div>
+            <div class="template-gallery">
+                <!-- Templates will be injected here -->
+            </div>
+        </div>
+    </div>
+
+
     
     <div id="copyProjectModal" class="modal">
         <div class="modal-content">
@@ -111,7 +125,7 @@
         {
             <tr>
                 <td class="title-column">
-                    <a href="@Url.Action("Edit", "Editor", new { projectId = project.ProjectId })">@project.Title</a>
+                    <a href="@Url.Action("Edit", "Editor", new { projectId = project.ProjectId })" class="brown-link">@project.Title</a>
                 </td>
                 <td class="other-column">@project.Owner</td>
                 <td class="other-column">@project.LastModifiedDate.ToString("g")</td>

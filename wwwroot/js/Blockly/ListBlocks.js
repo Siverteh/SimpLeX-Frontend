@@ -1,8 +1,10 @@
+import {FieldRichTextEditor} from "./TextBlocks.js";
+
 Blockly.Blocks['latex_item'] = {
     init: function() {
         this.appendDummyInput()
             .appendField("Item")
-            .appendField(new Blockly.FieldTextInput("Enter item text here"), "ITEM_TEXT");
+            .appendField(new FieldRichTextEditor("Enter item text here"), "ITEM_TEXT");
         this.setPreviousStatement(true, "latex_item"); // Allows chaining within "Itemize"
         this.setNextStatement(true, "latex_item");
         this.setColour(260);
@@ -109,10 +111,10 @@ Blockly.Blocks['latex_description_item'] = {
             .appendField("Item");
         this.appendDummyInput()
             .appendField("Term")
-            .appendField(new Blockly.FieldTextInput("Enter term here"), "TERM");
+            .appendField(new FieldRichTextEditor("Enter term here"), "TERM");
         this.appendDummyInput()
             .appendField("Description")
-            .appendField(new Blockly.FieldTextInput("Enter description here"), "DESCRIPTION");
+            .appendField(new FieldRichTextEditor("Enter description here"), "DESCRIPTION");
         this.setPreviousStatement(true, "latex_description_item");
         this.setNextStatement(true, "latex_description_item");
         this.setColour(260);
