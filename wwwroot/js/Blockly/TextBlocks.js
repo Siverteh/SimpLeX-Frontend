@@ -1,5 +1,9 @@
 import {FieldImageButton} from "./ImageBlocks.js";
+import {operators} from "../MathQuill/mathquillOperators.js";
+
+
 export var currentQuillInstance = null;
+
 
 export class FieldRichTextEditor extends Blockly.Field {
     constructor(text, opt_validator) {
@@ -35,17 +39,17 @@ export class FieldRichTextEditor extends Blockly.Field {
         editorContainer.style.position = 'relative';
         editorContainer.style.width = '80%';
         editorContainer.style.maxWidth = '600px';
-        editorContainer.style.overflowY = 'auto';
+        editorContainer.style.overflowY = 'visible';
         editorContainer.style.maxHeight = '80vh';
         overlay.appendChild(editorContainer);
 
         let isDragging = false;
 
-        overlay.addEventListener('mousedown', function() {
+        overlay.addEventListener('mousedown', function () {
             isDragging = false;
         });
 
-        overlay.addEventListener('mousemove', function() {
+        overlay.addEventListener('mousemove', function () {
             isDragging = true;
         });
 
@@ -64,19 +68,24 @@ export class FieldRichTextEditor extends Blockly.Field {
         editorContainer.appendChild(closeButton);
 
         const quillEditorDiv = document.createElement('div');
+        quillEditorDiv.style.minHeight = '200px';
+        quillEditorDiv.style.overflow = 'visible';
         editorContainer.appendChild(quillEditorDiv);
+
 
         const icons = Quill.import('ui/icons');
         icons['cite'] = '<i class="fa fa-book"></i>';
         icons['ref'] = '<i class="fa fa-tag"></i>';
 
-        this.quill = new Quill(quillEditorDiv, {
+        const quillOptions = {
             theme: 'snow',
             modules: {
+                formula: true,
                 toolbar: {
                     container: [
                         ['bold', 'italic', 'underline'],
-                        ['cite', 'ref']
+                        ['cite', 'ref'],
+                        ['formula']
                     ],
                     handlers: {
                         'cite': () => {
@@ -97,11 +106,23 @@ export class FieldRichTextEditor extends Blockly.Field {
                     matchVisual: false
                 }
             },
-            formats: ['bold', 'italic', 'underline', 'list', 'bullet', 'link']
-        });
-        this.quill.root.innerHTML = this.convertLatexToHtml(this.value_);
+            formats: ['bold', 'italic', 'underline', 'formula']
+        }
+
+        const enableMathQuillFormulaAuthoring = window.mathquill4quill();
+
+        this.quill = new Quill(quillEditorDiv, quillOptions);
 
         currentQuillInstance = this.quill;
+
+        enableMathQuillFormulaAuthoring(this.quill, {
+            displayHistory: false,
+            historySize: 10,
+            operators: operators
+        });
+
+        this.quill.root.innerHTML = this.convertLatexToHtml(this.value_);
+
 
         closeButton.onclick = () => this.closeEditor();
     }
@@ -114,12 +135,28 @@ export class FieldRichTextEditor extends Blockly.Field {
     }
 
     convertHtmlToLatex(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const formulas = doc.querySelectorAll('.ql-formula');
+
+        formulas.forEach(formula => {
+            let latex = formula.getAttribute('data-value');
+            let originalHtml = btoa(unescape(encodeURIComponent(formula.outerHTML)));  // Base64 encode the original HTML
+
+            latex = latex.replace(/(_|\^)([^{])/g, '$1{$2}'); // Fix subscripts/superscripts
+
+            // Embed the original HTML as a LaTeX comment correctly
+            // The space before % ensures it's treated as a comment.
+            let encodedHtml = `\n%html{"${originalHtml}"}%\n`;  // New lines ensure the comment is isolated
+            formula.replaceWith(`\\(${latex}\\)${encodedHtml}`);
+        });
+
+        html = doc.body.innerHTML;
+
         // Escape LaTeX special characters
         html = html.replace(/&/g, '\\&');
-        html = html.replace(/%/g, '\\%');
         html = html.replace(/\$/g, '\\$');
         html = html.replace(/#/g, '\\#');
-        html = html.replace(/_/g, '\\_');
 
         // Normal HTML to LaTeX conversions
         html = html.replace(/<strong>(.*?)<\/strong>/g, '\\textbf{$1}');
@@ -138,8 +175,9 @@ export class FieldRichTextEditor extends Blockly.Field {
     }
 
 
+
     convertLatexToHtml(latex) {
-        // Convert \cite commands to human-readable format immediately for editor display
+        // Convert \cite commands to human-readable format for editor display
         latex = latex.replace(/\\cite{([^}]+)}/g, '[Cite: $1]');
         latex = latex.replace(/\\ref{([^}]+)}/g, '[Ref: $1]');
 
@@ -150,12 +188,20 @@ export class FieldRichTextEditor extends Blockly.Field {
         latex = latex.replace(/\\\\ \\\\ /g, '</p><p>');
         latex = latex.replace(/\\\\ /g, '<br>');
 
+        // Wrap with <p> if not already wrapped
         if (!/^<p>/.test(latex)) {
             latex = `<p>${latex}</p>`;
         }
 
+        // This regex accounts for optional newlines and spaces around the LaTeX formula and the Base64 comment
+        latex = latex.replace(/(?:\r?\n|\r)?\\\(.*?\\\) ?(?:\r?\n|\r)?%html{"([^"]+)"}%(?:\r?\n|\r)?/g, (match, encodedHtml) => {
+            // Decode and restore the original HTML
+            return decodeURIComponent(escape(atob(encodedHtml)));
+        });
+
         return latex;
     }
+
 
     setValue(newValue) {
         if (this.value_ !== newValue) {
@@ -175,7 +221,7 @@ export class FieldRichTextEditor extends Blockly.Field {
 Blockly.fieldRegistry.register('field_rich_text_editor', FieldRichTextEditor);
 
 Blockly.Blocks['regular_text_block'] = {
-    init: function() {
+    init: function () {
         this.appendDummyInput()
             .appendField("Regular text block");
 
@@ -190,14 +236,14 @@ Blockly.Blocks['regular_text_block'] = {
     }
 };
 
-Blockly.JavaScript['regular_text_block'] = function(block) {
+Blockly.JavaScript['regular_text_block'] = function (block) {
     var text = block.getFieldValue('TEXT');
     // The text is already in LaTeX format.
     return text + '\\\\ \\\\ \n';
 };
 
 Blockly.Blocks['text_left_image_right_multicolumn'] = {
-    init: function() {
+    init: function () {
         this.appendDummyInput()
             .appendField("Multicolumn text: Text Left - Image Right");
 
@@ -235,7 +281,7 @@ Blockly.Blocks['text_left_image_right_multicolumn'] = {
     }
 };
 
-Blockly.JavaScript['text_left_image_right_multicolumn'] = function(block) {
+Blockly.JavaScript['text_left_image_right_multicolumn'] = function (block) {
     var text = block.getFieldValue('TEXT');
     var textWidth = block.getFieldValue('TEXT_WIDTH');
     var imageSrc = block.getFieldValue('SRC');
@@ -254,7 +300,7 @@ ${text}
 };
 
 Blockly.Blocks['image_left_text_right_multicolumn'] = {
-    init: function() {
+    init: function () {
         this.appendDummyInput()
             .appendField("Multicolumn text: Image Left - Text Right");
 
@@ -292,7 +338,7 @@ Blockly.Blocks['image_left_text_right_multicolumn'] = {
     }
 };
 
-Blockly.JavaScript['image_left_text_right_multicolumn'] = function(block) {
+Blockly.JavaScript['image_left_text_right_multicolumn'] = function (block) {
     var imageSrc = block.getFieldValue('SRC');
     var imageWidth = block.getFieldValue('IMAGE_WIDTH');
     var text = block.getFieldValue('TEXT');
@@ -311,7 +357,7 @@ ${text}
 };
 
 Blockly.Blocks['text_left_text_right_multicolumn'] = {
-    init: function() {
+    init: function () {
         this.appendDummyInput()
             .appendField("Multicolumn text: Text Left - Text Right");
 
@@ -349,7 +395,7 @@ Blockly.Blocks['text_left_text_right_multicolumn'] = {
     }
 };
 
-Blockly.JavaScript['text_left_text_right_multicolumn'] = function(block) {
+Blockly.JavaScript['text_left_text_right_multicolumn'] = function (block) {
     var leftText = block.getFieldValue('LEFT_TEXT');
     var leftTextWidth = block.getFieldValue('LEFT_TEXT_WIDTH');
     var rightText = block.getFieldValue('RIGHT_TEXT');
@@ -367,7 +413,7 @@ ${rightText}
 };
 
 Blockly.Blocks['latex_href'] = {
-    init: function() {
+    init: function () {
         this.appendDummyInput()
             .appendField("Hyperlink");
         this.appendDummyInput()
@@ -385,7 +431,7 @@ Blockly.Blocks['latex_href'] = {
     }
 };
 
-Blockly.JavaScript['latex_href'] = function(block) {
+Blockly.JavaScript['latex_href'] = function (block) {
     var url = block.getFieldValue('URL');
     var text = block.getFieldValue('TEXT');
     var code = `\\href{${url}}{${text}}\n`;
