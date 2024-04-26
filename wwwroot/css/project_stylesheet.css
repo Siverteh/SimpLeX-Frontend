@@ -1,5 +1,5 @@
 body {
-    background-color: #1B222C;
+    background-color: #244855;
     margin: 0;
     font-family: Arial, sans-serif;
 }
@@ -9,7 +9,7 @@ body {
     height: 90vh;
     margin: 5vh auto;
     border-radius: 15px;
-    background-color: #E0E0E0;
+    background-color: #FBE9D0;
 }
 
 /* Add to your existing CSS */
@@ -39,43 +39,53 @@ body {
     height: 7.5%;
     padding: 10px;
     margin: 0 auto 20px; /* Center the button */
-    background-color: #00A811;
-    color: white;
-    border: 2px solid white; /* White outline */
+    background-color: #E64833;
+    color: #ffffff;
+    border: 2px solid #244855; /* White outline */
     border-radius: 10px; /* More rounded edges */
     cursor: pointer;
     font-size: 28px; /* Bigger text */
 }
 
 .new-project-btn:hover {
-    background-color: #246B1E;
+    background-color: #BA3A2A;
 }
 
-
-.new-project-btn:hover {
-    background-color: #246B1E;
+.brown-link {
+    color: #244855; /* Warm brown color */
+    text-decoration: none; /* No underline by default */
 }
+
+.brown-link:hover {
+    color: #70382E; /* Darker shade for hover effect */
+    text-decoration: underline; /* Underline on hover */
+}
+
 
 .projects-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: white; /* Make all rows white */
-    border-bottom: 3px solid #E0E0E0; /* Add a grey line as divider */
+    background-color: #FBE9D0; /* Make all rows white */
+    border-bottom: 1px solid #A58B7D; /* Add a grey line as divider */
 }
 
 .projects-table th,
 .projects-table td {
-    border-bottom: 1px solid #E0E0E0; /* Gray line divider */
+    border-bottom: 1px solid #A58B7D; /* Gray line divider */
     text-align: left;
     padding: 8px;
 }
 
 .projects-table th {
-    background-color: #f8f9fa;
+    background-color: #d1b09e;
 }
 
 .projects-table tr:nth-child(even) {
-    background-color: white;
+    background-color: #EAD7C7;
+}
+
+.projects-table tr:nth-child(odd) {
+    background-color: #FBE9D0;
 }
 
 /* Center "All Projects" heading */
@@ -100,7 +110,7 @@ h2 {
 
 .modal-content {
     position: relative;
-    background-color: #E0E0E0;
+    background-color: #FBE9D0;
     margin: auto;
     padding: 20px;
     border: 8px solid #1B222C; /* Thick border with page background color */
@@ -117,7 +127,7 @@ h2 {
     position: absolute;
     top: 10px;
     right: 15px;
-    color: #1B222C;
+    color: #874F41;
     font-size: 24px;
     cursor: pointer;
 }
@@ -152,13 +162,6 @@ h2 {
     padding: 10px;
     margin: 5px 0; /* For spacing */
     border-radius: 5px;
-}
-
-.browse-templates-btn, .create-project-btn {
-    background-color: #00A811;
-    color: white;
-    border: none;
-    cursor: pointer;
 }
 
 .current-template {
@@ -335,9 +338,9 @@ h2 {
 }
 
 #createProjectModal .modal-content {
-    background-color: #E0E0E0;
+    background-color: #FBE9D0;
     padding: 20px; /* Adequate padding */
-    border: 8px solid #1B222C;
+    border: 8px solid #244855;
     width: 30%; /* Consistent moderate width */
     height: auto; /* Height adjusts to content */
     border-radius: 20px;
@@ -361,20 +364,26 @@ h2 {
 }
 
 #createProjectModal .browse-templates-btn {
-    background-color: #007BFF; /* Distinct color for differentiation */
-    color: white;
-    border: none;
+    background-color: #874F41; /* Distinct color for differentiation */
+    color: #ffffff;
+    border: 2px solid #244855;
     padding: 10px 15px;
     font-weight: bold;
     width: 52%; /* Matching width with inputs */
+    cursor: pointer;
+}
+
+#createProjectModal .browse-templates-btn:hover {
+    background-color: #70382E; /* Slightly darker on hover for feedback */
 }
 
 #createProjectModal .create-project-btn {
-    background-color: #28a745; /* Highlight color for primary action */
-    color: white;
+    background-color: #E64833; /* Highlight color for primary action */
+    color: #ffffff;
     padding: 15px 30px; /* Larger button for emphasis */
     margin-top: 20px; /* Adequate space from last input */
     border-radius: 8px; /* Soft rounded corners */
+    border: 2px solid #244855;
     cursor: pointer;
     transition: background-color 0.3s;
     width: 60%; /* Slightly larger width to emphasize importance */
@@ -382,7 +391,7 @@ h2 {
 }
 
 #createProjectModal .create-project-btn:hover {
-    background-color: #218838; /* Slightly darker on hover for feedback */
+    background-color: #BA3A2A; /* Slightly darker on hover for feedback */
 }
 
 #createProjectModal .current-template {
@@ -407,10 +416,10 @@ h2 {
 
 #templateSelectionModal .modal-content {
     position: relative;
-    background-color: #E0E0E0;
+    background-color: #FBE9D0;
     margin: auto;
     padding: 20px;
-    border: 8px solid #1B222C; /* Thick border with page background color */
+    border: 8px solid #244855; /* Thick border with page background color */
     width: 50%; /* Adjust width as necessary */
     height: 75%;
     box-sizing: border-box;
@@ -424,7 +433,7 @@ h2 {
     position: absolute;
     top: 10px;
     right: 15px;
-    color: #1B222C;
+    color: #874F41;
     font-size: 24px;
     cursor: pointer;
 }
@@ -443,7 +452,8 @@ h2 {
     margin: 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     border-radius: 8px;
-    background: #FFFFFF;
+    background: #874F41;
+    color: #FBE9D0;
     transition: transform 0.2s;
     cursor: pointer;
     display: flex;
@@ -468,7 +478,7 @@ h2 {
     margin: 0;
     text-align: center;
     font-weight: bold;
-    color: #333;
+    color: #ffffff;
     width: 100%; /* Ensures text aligns with the image width */
 }
 
@@ -479,16 +489,16 @@ h2 {
     cursor: pointer;
     margin: 0 5px;
     border-radius: 5px;
-    color: white;
+    color: #ffffff;
 }
 .toggle-btn:hover {
     background-color: #aaa;
 }
 .toggle-btn.active {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #E64833;
+    color: #ffffff;
 }
 
 .toggle-btn.active:hover {
-    background-color: #45a049;
+    background-color: #BA3A2A;
 }

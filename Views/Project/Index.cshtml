@@ -125,7 +125,7 @@
         {
             <tr>
                 <td class="title-column">
-                    <a href="@Url.Action("Edit", "Editor", new { projectId = project.ProjectId })">@project.Title</a>
+                    <a href="@Url.Action("Edit", "Editor", new { projectId = project.ProjectId })" class="brown-link">@project.Title</a>
                 </td>
                 <td class="other-column">@project.Owner</td>
                 <td class="other-column">@project.LastModifiedDate.ToString("g")</td>
