@@ -15,49 +15,97 @@ body {
 }
 
 
-.editor-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #1B222C;
-    padding: 10px;
+#menuDropdown {
+    position: relative; /* Establishes a positioning context for the dropdown */
+    display: inline-block; /* Keeps the dropdown inline with other buttons */
 }
 
-.center-title {
-    text-align: center;
-    flex-grow: 1;
+#menuDropdownContent {
+    display: none;
+    position: absolute;
+    background-color: #FBE9D0;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10000;
+    border-radius: 5px;
+    left: 0; /* Align dropdown left edge with button's left edge */
 }
 
-.additional-info {
-    font-size: 16px; /* Adjust size as necessary */
-    color: white;
-}
-
-.word-count {
-    margin-right: 5px; /* Adds spacing between the word count and the collaborator count */
-}
-
-.collaborators-count {
-    cursor: pointer; /* Changes the cursor to a pointer to indicate this is clickable */
-}
-
-.left-buttons, .right-buttons {
-    display: flex;
+#menuButton:hover + #menuDropdownContent,
+#menuDropdownContent:hover {
+    display: block; /* Show the dropdown menu on hover */
 }
 
 .editor-header button {
-    background-color: #495365;
-    border: none;
-    padding: 10px;
-    cursor: pointer;
-    margin-right: 10px; /* Space between buttons */
+    background-color: #E64833; /* Primary button color */
     color: white;
+    padding: 10px 15px;
+    margin-right: 10px; /* Space between buttons */
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
-.editor-header .project-title {
+.editor-header button:hover {
+    background-color: #BA3A2A; /* Dark red for hover */
+    transform: translateY(-2px); /* Slight lift */
+}
+
+#imageGalleryButton, #citationsButton {
+    background-color: #874F41; /* Warm Brown */
+}
+
+#imageGalleryButton:hover, #citationsButton:hover {
+    background-color: #70382E; /* Dark Brown */
+}
+
+#shareButton, #chatButton {
+    background-color: #3265B2; /* Secondary button color */
+}
+
+#shareButton:hover, #chatButton:hover {
+    background-color: #27496d; /* Darker blue for hover */
+}
+
+#menuDropdownContent button {
+    color: #244855; /* Text color */
+    background: none;
+    text-align: left;
+    padding: 8px 16px;
+}
+
+#menuDropdownContent button:hover {
+    background-color: #e0e0e0; /* Light gray for hover */
+}
+
+.editor-header {
+    background-color: #244855; /* Keep the header dark slate blue */
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white; /* Text color for contrast */
+}
+
+.editor-header .left-buttons {
+    display: flex; /* Ensures buttons are laid out in a horizontal row */
+}
+
+.editor-header button {
+    margin-right: 10px; /* Space between buttons */
+    padding: 10px 15px;
+    background-color: #E64833;
     color: white;
-    margin: 0;
-    flex-grow: 1;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.center-title h1 {
+    color: #FBE9D0; /* Consistent text color */
+    margin: auto;
+    padding: 0 10px;
     text-align: center;
 }
 
@@ -196,121 +244,241 @@ iframe.pdfDisplay {
 
 
 #imageGalleryModal .modal-content {
-    height: auto; /* Auto height based on content */
-    max-height: 80vh; /* 80% of the viewport height */
-    overflow: hidden; /* Hide overflow */
-    overflow-y: auto;
+    background-color: #FBE9D0; /* Cream background for modal content */
+    border: 8px solid #244855; /* Dark slate blue border for distinction */
+    border-radius: 20px; /* Rounded corners */
+    padding: 20px; /* Consistent padding */
+    height: auto; /* Adjust width for desktop view */
+    max-height: 80vh; /* Maximum height to avoid overflow */
+    overflow-y: auto; /* Enable vertical scrolling for content overflow */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+#imageGalleryModal .modal-header,
+#imageGalleryModal .modal-footer {
+    color: #244855; /* Text color for consistency */
+    border-bottom: none; /* Clean design, no border */
+    padding-bottom: 10px;
+    padding-top: 10px;
 }
 
 #imageGalleryModal .modal-body {
-    padding: 15px; /* Reduced padding might help */
+    padding: 20px; /* Adequate padding for spacing */
 }
 
-#imageGalleryModal .modal-content {
-    height: auto; /* Auto height based on content */
-    max-height: 80vh; /* 80% of the viewport height */
-    overflow: hidden; /* Hide overflow */
-    overflow-y: auto;
+#imageGalleryModal .image-item {
+    margin: 10px; /* Space between images */
+    position: relative; /* Necessary for positioning close button absolutely */
 }
 
-#imageGalleryModal .modal-body {
-    padding: 15px; /* Reduced padding might help */
+#imageGalleryModal img {
+    width: auto; /* Maintain image aspect ratio */
+    height: 100px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensure images cover the area */
+    border-radius: 4px; /* Rounded corners for images */
 }
 
-#imageGallery img {
-    width: 100px;
-    height: 100px;
-    margin: 5px;
-    object-fit: cover;
-}
-
-.image-item {
-    position: relative;
-    display: inline-block;
-    margin: 5px;
-}
-
-.image-close {
+#imageGalleryModal .image-close {
     position: absolute;
-    top: 5px; 
-    right: 5px;
-    cursor: pointer;
-    color: #ff0000;  
-    background-color: rgba(255, 255, 255, 0.8);  
+    top: -10px;
+    right: -10px;
+    background-color: #E64833; /* Bright red for attention */
+    color: white; /* White text for visibility */
     border: none;
-    border-radius: 50%;
-    font-size: 16px; 
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    line-height: 20px;  
+    border-radius: 50%; /* Circular button */
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);  
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.img-thumbnail {
+#imageGalleryModal .modal-footer {
+    border-top: none; /* No border for a cleaner footer */
+}
+
+#uploadImageButton {
+    background-color: #874F41; /* Warm brown for secondary buttons */
+    color: #ffffff; /* White text for contrast */
+    border-radius: 5px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 4px;
-}
-
-
-
-#citationGalleryModal .modal-content {
-    height: auto; /* Auto height based on content */
-    max-height: 80vh; /* 80% of the viewport height */
-    overflow: hidden; /* Hide overflow */
-    overflow-y: auto;
-}
-
-#citationGalleryModal .modal-body {
-    padding: 15px; /* Reduced padding might help */
-}
-
-
-.citation-entry {
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
     cursor: pointer;
 }
 
-.citation-entry:hover {
-    background-color: #f0f0f0;
+#uploadImageButton:hover {
+    background-color: #70382E; /* Dark brown for hover effect */
 }
 
-.delete-btn {
+.modal-header .close {
+    color: #244855; /* Ensure close button is visible and matches the theme */
+    opacity: 1;
+}
+
+
+#citationGalleryModal .modal-content {
+    background-color: #FBE9D0; /* Cream background for modal content */
+    border: 8px solid #244855; /* Dark slate blue border for distinction */
+    border-radius: 20px; /* Rounded corners */
+    padding: 20px; /* Consistent padding */
+    height: auto; /* Automatic height adjustment */
+    max-height: 80vh; /* Maximum height to 80% of the viewport */
+    overflow-y: auto; /* Enable vertical scrolling */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+#citationGalleryModal .modal-header,
+#citationGalleryModal .modal-footer {
+    border-bottom: none; /* Remove any borders */
+    color: #244855; /* Text color */
+}
+
+#citationGalleryModal .modal-body {
+    padding: 20px; /* Adequate padding for spacing */
+}
+
+#citationGalleryModal .citation-entry {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #E0E0E0; /* Lighter gray for entries */
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 4px; /* Rounded edges */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+#citationGalleryModal .citation-entry:hover {
+    background-color: #d3d3d3; /* Slightly darker on hover */
+}
+
+#citationGalleryModal .delete-btn {
+    color: #E64833; /* Bright red for delete buttons */
     padding: 0 5px;
     border: none;
     background-color: transparent;
     cursor: pointer;
-    color: red;
     font-weight: bold;
 }
 
-.citation-entry {
-    padding: 10px;
-    margin-top: 5px;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
+#modal-footer, #citationFormContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Ensure full width use */
 }
 
-#modal-footer, #citationFormContainer{
-    display: flex;        /* Make the container a flex container */
-    justify-content: center; /* Horizontally center the content (including buttons) */
-    align-items: center;  /* Vertically center the content if needed */
-}
-
-.custom-toolbar .ql-custom {
-    background: none;
+#citationGalleryModal .dropdown-content button {
+    color: #244855; /* Dark slate blue text for dropdown buttons */
+    background-color: #FBE9D0; /* Cream background for dropdown */
+    padding: 12px 16px;
     border: none;
-    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    border-radius: 4px; /* Rounded corners for buttons */
+}
+
+#citationGalleryModal .dropdown-content button:hover {
+    background-color: #E0E0E0; /* Hover state for dropdown buttons */
+}
+
+#citationGalleryModal .close {
+    color: #244855;
+    opacity: 1; /* Fully opaque for visibility */
 }
 
 .custom-toolbar .ql-custom .fa {
-    font-size: 18px; /* Icon size */
-    color: #333; /* Icon color */
+    font-size: 18px;
+    color: #244855; /* Icons colored to match dark slate blue */
 }
 
+/* Collaborators Modal Styling */
+#collaboratorsModal .modal-content {
+    background-color: #FBE9D0; /* Cream background for modal content */
+    border: 8px solid #244855; /* Dark slate blue border for distinction */
+    border-radius: 20px; /* Rounded corners */
+    padding: 20px; /* Consistent padding */
+    max-height: 80vh; /* Maximum height to avoid overflow */
+    overflow-y: auto; /* Enable vertical scrolling for content overflow */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+#collaboratorsModal .modal-header,
+#collaboratorsModal .modal-footer {
+    color: #244855; /* Text color for consistency */
+    padding: 10px; /* Consistent padding */
+    border-bottom: none; /* No bottom border in header */
+}
+
+#collaboratorsModal .modal-body {
+    padding: 20px; /* Adequate padding for spacing */
+}
+
+/* Share Link Modal Styling */
+#shareLinkModal .modal-content {
+    background-color: #FBE9D0; /* Cream background */
+    border: 8px solid #244855; /* Dark slate blue border */
+    border-radius: 20px; /* Rounded corners */
+    padding: 20px; /* Consistent padding */
+    max-height: 80vh; /* Maximum height */
+    overflow-y: auto; /* Scrolling for overflow */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+}
+
+#shareLinkModal .modal-header,
+#shareLinkModal .modal-footer {
+    color: #244855; /* Text color */
+    padding: 10px; /* Padding for header and footer */
+    border-bottom: none; /* No bottom border */
+}
+
+#shareLinkModal .modal-body {
+    padding: 20px; /* Padding for body */
+}
+
+#shareLinkModal .modal-footer {
+    border-top: none; /* Clean footer without top border */
+}
+
+/* Close button style shared by both modals */
+.modal-header .close {
+    color: #244855; /* Close button color consistent with the theme */
+    opacity: 1; /* Fully opaque for better visibility */
+}
+
+/* Makes our label white. */
+.blocklyTreeLabel {
+    color: #FBE9D0;
+}
+
+.blocklyToolboxDiv {
+    background-color: #244855 !important; /* Primary dark background */
+    color: white !important; /* Ensures text is white */
+}
+/* Adds padding around the group of categories and separators. */
+.blocklyToolboxContents {
+    padding: 0.5em;
+}
+/* Adds space between the categories, rounds the corners and adds space around the label. */
+.blocklyTreeRow {
+    padding: 3px;
+    margin-bottom: 0.5em;
+    border-radius: 4px;
+}
+/* Changes color of the icon to white. */
+.customIcon {
+    color: #fff;
+}
+/* Stacks the icon on top of the label. */
+.blocklyTreeRowContentContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.blocklyTreeRow {
+    height: initial;
+}
+
+.blocklySvg {
+    background-color: #FBE9D0 !important;
+}

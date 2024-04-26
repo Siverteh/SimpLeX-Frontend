@@ -48,6 +48,15 @@ Blockly.Blocks['document_start_block'] = {
                 ["12pt", "12pt"]
             ]), "FONTSIZE");
 
+        this.appendDummyInput()
+            .appendField("Spacing")
+            .appendField(new Blockly.FieldDropdown([
+                ["Single Spacing (default)", "singlespacing"],
+                ["One and a Half Spacing", "onehalfspacing"],
+                ["Double Spacing", "doublespacing"]
+            ]), "SPACING");
+
+
         this.appendStatementInput("CONFIG")
             .setCheck("ConfigBlocks") // Only accept blocks of type "ConfigBlocks"
             .appendField("Preliminaries (optional) -->");
@@ -72,6 +81,7 @@ Blockly.JavaScript['document_start_block'] = function(block) {
     var paperSize = block.getFieldValue('PAPERSIZE');
     var fontSize = block.getFieldValue('FONTSIZE');
     globalLanguage = block.getFieldValue('LANGUAGE');
+    var spacing = block.getFieldValue('SPACING');
 
     var packages = [
         "\\usepackage{amsmath}",
@@ -92,8 +102,12 @@ Blockly.JavaScript['document_start_block'] = function(block) {
         "\\usepackage{array}",
         "\\usepackage{svg}",
         "\\usepackage{listings}",
-        "\\usepackage[newfloat]{minted}"
+        "\\usepackage[newfloat]{minted}",
+        "\\usepackage{setspace}"
     ].join('\n');
+
+    var spacingCommand = spacing === "onehalfspacing" ? "\\onehalfspacing" :
+        spacing === "doublespacing" ? "\\doublespacing" : "\\singlespacing";
 
     var frontPageCode = Blockly.JavaScript.valueToCode(block, 'FRONTPAGE', Blockly.JavaScript.ORDER_ATOMIC) || '';
     var configCode = Blockly.JavaScript.statementToCode(block, 'CONFIG').trim();
@@ -102,7 +116,7 @@ Blockly.JavaScript['document_start_block'] = function(block) {
     var docSetup = `\\documentclass[a4paper, ${fontSize}]{${globalDocType}}\n${packages}\\setlength{\\parindent}{0pt}\n${globalCitations}\n`;
 
     // Begin document environment
-    var beginDocument = `\\begin{document}\n\\pagestyle{empty}\n${frontPageCode}\n\\clearpage\n\\pagenumbering{gobble}\n`;
+    var beginDocument = `\\begin{document}\n${spacingCommand}\n\\pagestyle{empty}\n${frontPageCode}\n\\clearpage\n\\pagenumbering{gobble}\n`;
 
     // Applying Roman numerals for preliminaries
     var preliminaries = `\\pagenumbering{roman}\n${configCode}\n`;
@@ -228,7 +242,7 @@ Blockly.Blocks['abstract_page_block'] = {
 };
 
 Blockly.JavaScript['abstract_page_block'] = function(block) {
-    var abstractText = Blockly.JavaScript.valueToCode(block, 'ABSTRACT_TEXT', Blockly.JavaScript.ORDER_ATOMIC);
+    var abstractText = block.getFieldValue('ABSTRACT_TEXT');
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
 
@@ -259,7 +273,7 @@ Blockly.Blocks['acknowledgements_page_block'] = {
 };
 
 Blockly.JavaScript['acknowledgements_page_block'] = function(block) {
-    var ackText = Blockly.JavaScript.valueToCode(block, 'ACKNOWLEDGEMENTS_TEXT', Blockly.JavaScript.ORDER_ATOMIC);
+    var ackText = block.getFieldValue('ACKNOWLEDGEMENTS_TEXT');
     var clearPage = block.getFieldValue('CLEAR_PAGE') === 'TRUE' ? '\\clearpage\n' : '';
     var tocLevel = (globalDocType === 'report' || globalDocType === 'book') ? 'chapter' : 'section';
 

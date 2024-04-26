@@ -118,7 +118,7 @@ namespace SimpLeX_Frontend.Controllers
                 LatexCode = model.LatexCode,
                 WorkspaceState = model.WorkspaceState
             };
-
+            
             var requestContent = new StringContent(JsonConvert.SerializeObject(latexRequest), Encoding.UTF8, "application/json");
 
             // Forwarding the JWT token if present

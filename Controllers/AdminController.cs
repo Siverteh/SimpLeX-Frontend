@@ -66,6 +66,7 @@ namespace SimpLeX_Frontend.Controllers
         public async Task<IActionResult> AddTemplate(string templateName, string xmlContent, string imagePath)
         {
             var httpClient = _httpClientFactory.CreateClient();
+            
             var templateData = new
             {
                 TemplateName = templateName,
@@ -73,6 +74,8 @@ namespace SimpLeX_Frontend.Controllers
                 ImagePath = imagePath,
                 IsCustom = false
             };
+            
+            _logger.LogInformation(templateData.ToString());
             
             var token = Request.Cookies["JWTToken"];
             
