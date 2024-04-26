@@ -59,10 +59,17 @@ async function sendChat() {
             if (currentUser) {
                 const chat = {
                     content: chatContent,
-                    timestamp: new Date().toISOString(),
+                    timestamp: new Date().toLocaleString('en-GB', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                        hour12: false
+                    }),
                     userId: currentUser.userId,
                     userName: currentUser.userName,
                 };
+
                 wsService.sendMessage('newChat', chat);
                 await displayMessage(chat);
             } else {
